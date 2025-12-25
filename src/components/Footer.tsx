@@ -30,25 +30,25 @@ const Footer = () => {
   };
 
   return (
-    <footer id="contact" className="bg-background text-foreground">
+    <footer id="contact" className="bg-secondary text-secondary-foreground">
       {/* Main Footer */}
       <div className="container mx-auto px-4 py-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Brand & Contact */}
           <div className="lg:col-span-2">
-            <p className="text-muted-foreground mb-6 max-w-sm">
+            <p className="text-secondary-foreground/70 mb-6 max-w-sm">
               Votre partenaire de confiance pour le recrutement dans le bâtiment et l'industrie.
             </p>
             <div className="space-y-3">
-              <a href="tel:+33140341045" className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
+              <a href="tel:+33140341045" className="flex items-center gap-3 text-secondary-foreground/80 hover:text-primary transition-colors">
                 <Phone className="w-5 h-5" />
                 01 40 34 10 45
               </a>
-              <a href="mailto:contact@interim-online.fr" className="flex items-center gap-3 text-muted-foreground hover:text-primary transition-colors">
+              <a href="mailto:contact@interim-online.fr" className="flex items-center gap-3 text-secondary-foreground/80 hover:text-primary transition-colors">
                 <Mail className="w-5 h-5" />
                 contact@interim-online.fr
               </a>
-              <div className="flex items-center gap-3 text-muted-foreground">
+              <div className="flex items-center gap-3 text-secondary-foreground/80">
                 <MapPin className="w-5 h-5" />
                 82 rue Dunkerque, 75009 Paris
               </div>
@@ -57,11 +57,11 @@ const Footer = () => {
 
           {/* Services */}
           <div>
-            <h4 className="font-bold text-foreground mb-4">Services</h4>
+            <h4 className="font-bold text-secondary-foreground mb-4">Services</h4>
             <ul className="space-y-3">
               {footerLinks.services.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-muted-foreground hover:text-primary transition-colors">
+                  <a href={link.href} className="text-secondary-foreground/70 hover:text-primary transition-colors">
                     {link.label}
                   </a>
                 </li>
@@ -71,11 +71,11 @@ const Footer = () => {
 
           {/* Company */}
           <div>
-            <h4 className="font-bold text-foreground mb-4">Entreprise</h4>
+            <h4 className="font-bold text-secondary-foreground mb-4">Entreprise</h4>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-muted-foreground hover:text-primary transition-colors">
+                  <a href={link.href} className="text-secondary-foreground/70 hover:text-primary transition-colors">
                     {link.label}
                   </a>
                 </li>
@@ -85,11 +85,11 @@ const Footer = () => {
 
           {/* Resources */}
           <div>
-            <h4 className="font-bold text-foreground mb-4">Ressources</h4>
+            <h4 className="font-bold text-secondary-foreground mb-4">Ressources</h4>
             <ul className="space-y-3">
               {footerLinks.resources.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-muted-foreground hover:text-primary transition-colors">
+                  <a href={link.href} className="text-secondary-foreground/70 hover:text-primary transition-colors">
                     {link.label}
                   </a>
                 </li>
@@ -100,27 +100,27 @@ const Footer = () => {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-border">
+      <div className="border-t border-secondary-foreground/10">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-muted-foreground text-sm">
+            <p className="text-secondary-foreground/60 text-sm">
               © {currentYear} Interim online Pro-Tech 82. Tous droits réservés.
             </p>
             <div className="flex items-center gap-6">
               {footerLinks.legal.map((link) => (
-                <a key={link.label} href={link.href} className="text-muted-foreground text-sm hover:text-primary transition-colors">
+                <a key={link.label} href={link.href} className="text-secondary-foreground/60 text-sm hover:text-primary transition-colors">
                   {link.label}
                 </a>
               ))}
             </div>
             <div className="flex items-center gap-4">
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="#" className="text-secondary-foreground/60 hover:text-primary transition-colors">
                 <Linkedin className="w-5 h-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="#" className="text-secondary-foreground/60 hover:text-primary transition-colors">
                 <Facebook className="w-5 h-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+              <a href="#" className="text-secondary-foreground/60 hover:text-primary transition-colors">
                 <Twitter className="w-5 h-5" />
               </a>
             </div>
