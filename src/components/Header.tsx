@@ -25,10 +25,8 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-card/95 backdrop-blur-md shadow-card"
-          : "bg-transparent"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-card shadow-card ${
+        isScrolled ? "backdrop-blur-md" : ""
       }`}
     >
       <div className="container mx-auto px-4">
@@ -44,9 +42,7 @@ const Header = () => {
               <a
                 key={link.label}
                 href={link.href}
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  isScrolled ? "text-foreground" : "text-primary-foreground/90"
-                }`}
+                className="text-sm font-medium transition-colors hover:text-primary text-foreground"
               >
                 {link.label}
               </a>
@@ -55,11 +51,11 @@ const Header = () => {
 
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center gap-4">
-            <a href="tel:+33140341045" className={`flex items-center gap-2 text-sm font-medium ${isScrolled ? "text-foreground" : "text-primary-foreground"}`}>
+            <a href="tel:+33140341045" className="flex items-center gap-2 text-sm font-medium text-foreground">
               <Phone className="w-4 h-4" />
               01 40 34 10 45
             </a>
-            <Button variant={isScrolled ? "cta" : "hero"} size="lg">
+            <Button variant="cta" size="lg">
               Espace Recruteur
             </Button>
           </div>
@@ -70,9 +66,9 @@ const Header = () => {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (
-              <X className={`w-6 h-6 ${isScrolled ? "text-foreground" : "text-primary-foreground"}`} />
+              <X className="w-6 h-6 text-foreground" />
             ) : (
-              <Menu className={`w-6 h-6 ${isScrolled ? "text-foreground" : "text-primary-foreground"}`} />
+              <Menu className="w-6 h-6 text-foreground" />
             )}
           </button>
         </div>
