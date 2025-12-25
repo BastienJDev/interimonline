@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Phone } from "lucide-react";
+import logo from "@/assets/logo.png";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -33,13 +34,8 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <a href="#" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-lg gradient-cta flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">B</span>
-            </div>
-            <span className={`font-bold text-xl ${isScrolled ? "text-foreground" : "text-primary-foreground"}`}>
-              BTP<span className="text-primary">Intérim</span>
-            </span>
+          <a href="#" className="flex items-center">
+            <img src={logo} alt="Interim Online Pro-Tech" className="h-10" />
           </a>
 
           {/* Desktop Navigation */}
@@ -59,9 +55,9 @@ const Header = () => {
 
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center gap-4">
-            <a href="tel:+33100000000" className={`flex items-center gap-2 text-sm font-medium ${isScrolled ? "text-foreground" : "text-primary-foreground"}`}>
+            <a href="tel:+33140341045" className={`flex items-center gap-2 text-sm font-medium ${isScrolled ? "text-foreground" : "text-primary-foreground"}`}>
               <Phone className="w-4 h-4" />
-              01 00 00 00 00
+              01 40 34 10 45
             </a>
             <Button variant={isScrolled ? "cta" : "hero"} size="lg">
               Espace Recruteur
