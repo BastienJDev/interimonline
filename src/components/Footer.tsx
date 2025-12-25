@@ -38,27 +38,27 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <div className="flex items-center gap-2 mb-6">
               <div className="w-10 h-10 rounded-lg gradient-cta flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">B</span>
+                <span className="text-primary-foreground font-bold text-xl">I</span>
               </div>
               <span className="font-bold text-xl text-secondary-foreground">
-                BTP<span className="text-primary">Intérim</span>
+                Interim online <span className="text-primary">Pro-Tech 82</span>
               </span>
             </div>
             <p className="text-secondary-foreground/70 mb-6 max-w-sm">
-              Votre partenaire de confiance pour le recrutement dans le bâtiment et l'industrie depuis 2010.
+              Votre partenaire de confiance pour le recrutement dans le bâtiment et l'industrie.
             </p>
             <div className="space-y-3">
-              <a href="tel:+33100000000" className="flex items-center gap-3 text-secondary-foreground/80 hover:text-primary transition-colors">
+              <a href="tel:+33140341045" className="flex items-center gap-3 text-secondary-foreground/80 hover:text-primary transition-colors">
                 <Phone className="w-5 h-5" />
-                01 00 00 00 00
+                01 40 34 10 45
               </a>
-              <a href="mailto:contact@btpinterim.fr" className="flex items-center gap-3 text-secondary-foreground/80 hover:text-primary transition-colors">
+              <a href="mailto:contact@interim-online.fr" className="flex items-center gap-3 text-secondary-foreground/80 hover:text-primary transition-colors">
                 <Mail className="w-5 h-5" />
-                contact@btpinterim.fr
+                contact@interim-online.fr
               </a>
               <div className="flex items-center gap-3 text-secondary-foreground/80">
                 <MapPin className="w-5 h-5" />
-                Paris, Lyon, Marseille, Bordeaux
+                82 rue Dunkerque, 75009 Paris
               </div>
             </div>
           </div>
@@ -112,7 +112,7 @@ const Footer = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-secondary-foreground/60 text-sm">
-              © {currentYear} BTPIntérim. Tous droits réservés.
+              © {currentYear} Interim online Pro-Tech 82. Tous droits réservés.
             </p>
             <div className="flex items-center gap-6">
               {footerLinks.legal.map((link) => (
