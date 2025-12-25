@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Users, Building2, CheckCircle } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import heroImage from "@/assets/hero-construction.jpg";
 
 const HeroSection = () => {
@@ -39,7 +39,7 @@ const HeroSection = () => {
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-12 animate-fade-up animation-delay-300">
+          <div className="flex flex-col sm:flex-row gap-4 animate-fade-up animation-delay-300">
             <Button variant="hero" size="xl">
               Je recrute
               <ArrowRight className="w-5 h-5" />
@@ -47,22 +47,6 @@ const HeroSection = () => {
             <Button variant="heroOutline" size="xl">
               Je cherche une mission
             </Button>
-          </div>
-
-          {/* Trust Indicators */}
-          <div className="flex flex-wrap gap-6 animate-fade-up animation-delay-400">
-            <div className="flex items-center gap-2 text-primary-foreground/80">
-              <Users className="w-5 h-5 text-primary" />
-              <span className="text-sm font-medium">+15 000 intérimaires</span>
-            </div>
-            <div className="flex items-center gap-2 text-primary-foreground/80">
-              <Building2 className="w-5 h-5 text-primary" />
-              <span className="text-sm font-medium">+500 entreprises partenaires</span>
-            </div>
-            <div className="flex items-center gap-2 text-primary-foreground/80">
-              <CheckCircle className="w-5 h-5 text-primary" />
-              <span className="text-sm font-medium">98% de satisfaction</span>
-            </div>
           </div>
         </div>
       </div>
