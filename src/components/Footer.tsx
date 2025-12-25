@@ -1,5 +1,4 @@
 import { Phone, Mail, MapPin, Linkedin, Facebook, Twitter } from "lucide-react";
-import logo from "@/assets/logo.png";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -37,9 +36,6 @@ const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12">
           {/* Brand & Contact */}
           <div className="lg:col-span-2">
-            <div className="mb-6">
-              <img src={logo} alt="Interim Online Pro-Tech" className="h-10" />
-            </div>
             <p className="text-secondary-foreground/70 mb-6 max-w-sm">
               Votre partenaire de confiance pour le recrutement dans le bâtiment et l'industrie.
             </p>
