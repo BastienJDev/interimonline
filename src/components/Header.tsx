@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Phone } from "lucide-react";
 import logo from "@/assets/logo.png";
@@ -55,9 +56,16 @@ const Header = () => {
               <Phone className="w-4 h-4" />
               01 40 34 10 45
             </a>
-            <Button variant="cta" size="lg">
-              Espace Recruteur
-            </Button>
+<Link to="/dashboard-interimaire">
+              <Button variant="outline" size="lg">
+                Espace Intérimaire
+              </Button>
+            </Link>
+            <Link to="/dashboard-entreprise">
+              <Button variant="cta" size="lg">
+                Espace Recruteur
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -87,9 +95,16 @@ const Header = () => {
                   {link.label}
                 </a>
               ))}
-              <Button variant="cta" size="lg" className="mt-4">
-                Espace Recruteur
-              </Button>
+<Link to="/dashboard-interimaire" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button variant="outline" size="lg" className="w-full">
+                  Espace Intérimaire
+                </Button>
+              </Link>
+              <Link to="/dashboard-entreprise" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button variant="cta" size="lg" className="w-full mt-2">
+                  Espace Recruteur
+                </Button>
+              </Link>
             </nav>
           </div>
         )}
