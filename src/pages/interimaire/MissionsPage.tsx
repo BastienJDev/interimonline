@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import InterimaireLayout from "./InterimaireLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -263,16 +264,16 @@ const MissionsPage = () => {
               <div className="flex items-center gap-3 lg:flex-col lg:items-end">
                 <p className="text-xs text-muted-foreground">Publié le {mission.date}</p>
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setSelectedMission(mission)}
-                  >
-                    Voir détails
-                  </Button>
-                  <Button variant="cta" size="sm">
-                    Postuler
-                  </Button>
+                  <Link to={`/dashboard-interimaire/missions/${mission.id}`}>
+                    <Button variant="outline" size="sm">
+                      Voir détails
+                    </Button>
+                  </Link>
+                  <Link to={`/dashboard-interimaire/missions/${mission.id}`}>
+                    <Button variant="cta" size="sm">
+                      Postuler
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>
