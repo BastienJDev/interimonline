@@ -127,6 +127,7 @@ const CandidaturesPage = () => {
   };
 
   return (
+    <OffresLayout title="Candidatures">
     <div className="space-y-6">
       {/* Header */}
       <div>
@@ -306,6 +307,7 @@ const CandidaturesPage = () => {
         </DialogContent>
       </Dialog>
     </div>
+    </OffresLayout>
   );
 };
 

@@ -134,6 +134,7 @@ const MissionsPage = () => {
   });
 
   return (
+    <InterimaireLayout title="Rechercher des missions">
     <div className="space-y-6">
       {/* Header */}
       <div>
@@ -365,6 +366,7 @@ const MissionsPage = () => {
         </DialogContent>
       </Dialog>
     </div>
+    </InterimaireLayout>
   );
 };
 
