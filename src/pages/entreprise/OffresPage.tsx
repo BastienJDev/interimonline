@@ -14,7 +14,8 @@ import {
   Clock,
   Users,
   Filter,
-  MoreVertical
+  MoreVertical,
+  CalendarClock
 } from "lucide-react";
 import {
   Dialog,
@@ -43,6 +44,7 @@ const mockOffres = [
     candidatures: 12, 
     status: "active", 
     date: "15/01/2025",
+    dateFin: "30/06/2025",
     description: "Nous recherchons un maçon qualifié pour des chantiers de construction neuve.",
     experience: "3-5 ans"
   },
@@ -55,6 +57,7 @@ const mockOffres = [
     candidatures: 8, 
     status: "active", 
     date: "14/01/2025",
+    dateFin: "14/07/2025",
     description: "Mission de 6 mois pour installation électrique industrielle.",
     experience: "5+ ans"
   },
@@ -67,6 +70,7 @@ const mockOffres = [
     candidatures: 5, 
     status: "pourvue", 
     date: "10/01/2025",
+    dateFin: "10/04/2025",
     description: "Soudure sur structures métalliques.",
     experience: "3-5 ans"
   },
@@ -79,6 +83,7 @@ const mockOffres = [
     candidatures: 15, 
     status: "active", 
     date: "12/01/2025",
+    dateFin: "31/12/2025",
     description: "Encadrement d'équipe sur chantier de rénovation.",
     experience: "5+ ans"
   },
@@ -91,6 +96,7 @@ const mockOffres = [
     candidatures: 6, 
     status: "en_pause", 
     date: "08/01/2025",
+    dateFin: "08/05/2025",
     description: "Installation et maintenance de systèmes de chauffage.",
     experience: "2-3 ans"
   },
@@ -186,6 +192,16 @@ const OffresPage = () => {
                   </Select>
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="dateDebut">Date de début</Label>
+                  <Input id="dateDebut" type="date" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="dateFin">Date de fin approximative</Label>
+                  <Input id="dateFin" type="date" />
+                </div>
+              </div>
               <div className="grid gap-2">
                 <Label htmlFor="description">Description du poste</Label>
                 <Textarea id="description" placeholder="Décrivez les missions et compétences requises..." rows={4} />
@@ -249,6 +265,9 @@ const OffresPage = () => {
                       </span>
                       <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
                         <Clock className="w-4 h-4" /> {offre.experience}
+                      </span>
+                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <CalendarClock className="w-4 h-4" /> Fin: {offre.dateFin}
                       </span>
                       <span className="px-2.5 py-1 text-xs font-medium bg-accent text-accent-foreground rounded-full">
                         {offre.type}

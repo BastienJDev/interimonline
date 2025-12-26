@@ -27,6 +27,7 @@ const mockOffre = {
   salaire: "14-16€/h",
   status: "active",
   date: "15/01/2025",
+  dateFin: "30/06/2025",
   description: "Nous recherchons un maçon qualifié pour des chantiers de construction neuve. Vous serez responsable de la réalisation d'ouvrages en béton, briques et parpaings. Le poste requiert une bonne maîtrise des techniques de maçonnerie traditionnelle.",
   experience: "3-5 ans",
   competences: ["Maçonnerie traditionnelle", "Lecture de plans", "Béton armé", "Coffrage"],
@@ -217,6 +218,10 @@ const OffreDetailPage = () => {
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Date de début</span>
                   <span className="text-sm font-medium text-foreground">{mockOffre.dateDebut}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Date de fin approx.</span>
+                  <span className="text-sm font-medium text-foreground">{mockOffre.dateFin}</span>
                 </div>
               </div>
             </div>
