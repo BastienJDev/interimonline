@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import OffresLayout from "./OffresLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -263,10 +264,12 @@ const OffresPage = () => {
                   <span className="text-sm text-muted-foreground">candidatures</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm">
-                    <Eye className="w-4 h-4 mr-2" />
-                    Voir
-                  </Button>
+                  <Link to={`/dashboard-entreprise/offres/${offre.id}`}>
+                    <Button variant="outline" size="sm">
+                      <Eye className="w-4 h-4 mr-2" />
+                      Voir
+                    </Button>
+                  </Link>
                   <Button variant="ghost" size="icon" className="h-9 w-9">
                     <Edit2 className="w-4 h-4" />
                   </Button>

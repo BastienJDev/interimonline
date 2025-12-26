@@ -9,8 +9,11 @@ import DashboardEntreprise from "./pages/DashboardEntreprise";
 import DashboardInterimaire from "./pages/DashboardInterimaire";
 import OffresPage from "./pages/entreprise/OffresPage";
 import CandidaturesPage from "./pages/entreprise/CandidaturesPage";
+import OffreDetailPage from "./pages/entreprise/OffreDetailPage";
+import CandidatDetailPage from "./pages/entreprise/CandidatDetailPage";
 import MissionsPage from "./pages/interimaire/MissionsPage";
 import ProfilPage from "./pages/interimaire/ProfilPage";
+import MissionDetailPage from "./pages/interimaire/MissionDetailPage";
 
 const queryClient = new QueryClient();
 
@@ -24,9 +27,12 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/dashboard-entreprise" element={<DashboardEntreprise />} />
           <Route path="/dashboard-entreprise/offres" element={<OffresPage />} />
+          <Route path="/dashboard-entreprise/offres/:id" element={<OffreDetailPage />} />
           <Route path="/dashboard-entreprise/candidatures" element={<CandidaturesPage />} />
+          <Route path="/dashboard-entreprise/candidat/:id" element={<CandidatDetailPage />} />
           <Route path="/dashboard-interimaire" element={<DashboardInterimaire />} />
           <Route path="/dashboard-interimaire/missions" element={<MissionsPage />} />
+          <Route path="/dashboard-interimaire/missions/:id" element={<MissionDetailPage />} />
           <Route path="/dashboard-interimaire/profil" element={<ProfilPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
