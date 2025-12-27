@@ -16,6 +16,7 @@ import ProfilPage from "./pages/interimaire/ProfilPage";
 import MissionDetailPage from "./pages/interimaire/MissionDetailPage";
 import NosInterimaires from "./pages/NosInterimaires";
 import NosClients from "./pages/NosClients";
+import NosServices from "./pages/NosServices";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/nos-interimaires" element={<NosInterimaires />} />
           <Route path="/nos-clients" element={<NosClients />} />
+          <Route path="/nos-services" element={<NosServices />} />
           <Route path="/dashboard-entreprise" element={<DashboardEntreprise />} />
           <Route path="/dashboard-entreprise/offres" element={<OffresPage />} />
           <Route path="/dashboard-entreprise/offres/:id" element={<OffreDetailPage />} />
