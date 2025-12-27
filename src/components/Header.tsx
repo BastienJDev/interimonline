@@ -18,6 +18,7 @@ const Header = () => {
 
   const navLinks = [
     { label: "Accueil", href: "/", isRoute: true },
+    { label: "À propos", href: "/a-propos", isRoute: true },
     { label: "Nos Intérimaires", href: "/nos-interimaires", isRoute: true },
     { label: "Nos Clients", href: "/nos-clients", isRoute: true },
     { label: "Nos Services", href: "/#services", isRoute: false },

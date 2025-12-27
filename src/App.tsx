@@ -16,6 +16,7 @@ import ProfilPage from "./pages/interimaire/ProfilPage";
 import MissionDetailPage from "./pages/interimaire/MissionDetailPage";
 import NosInterimaires from "./pages/NosInterimaires";
 import NosClients from "./pages/NosClients";
+import APropos from "./pages/APropos";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/a-propos" element={<APropos />} />
           <Route path="/nos-interimaires" element={<NosInterimaires />} />
           <Route path="/nos-clients" element={<NosClients />} />
           <Route path="/dashboard-entreprise" element={<DashboardEntreprise />} />
