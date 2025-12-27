@@ -17,11 +17,11 @@ const Header = () => {
   }, []);
 
   const navLinks = [
-    { label: "Accueil", href: "#" },
-    { label: "Nos Services", href: "#services" },
-    { label: "Secteurs", href: "#secteurs" },
-    { label: "Comment ça marche", href: "#process" },
-    { label: "Contact", href: "#contact" },
+    { label: "Accueil", href: "/", isRoute: true },
+    { label: "Nos Intérimaires", href: "/nos-interimaires", isRoute: true },
+    { label: "Nos Clients", href: "/nos-clients", isRoute: true },
+    { label: "Nos Services", href: "/#services", isRoute: false },
+    { label: "Contact", href: "/#contact", isRoute: false },
   ];
 
   return (
@@ -40,13 +40,23 @@ const Header = () => {
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-8">
             {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="text-sm font-medium transition-colors hover:text-primary text-foreground"
-              >
-                {link.label}
-              </a>
+              link.isRoute ? (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  className="text-sm font-medium transition-colors hover:text-primary text-foreground"
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="text-sm font-medium transition-colors hover:text-primary text-foreground"
+                >
+                  {link.label}
+                </a>
+              )
             ))}
           </nav>
 
@@ -86,14 +96,25 @@ const Header = () => {
           <div className="lg:hidden bg-card rounded-lg shadow-card p-6 mb-4 animate-scale-in">
             <nav className="flex flex-col gap-4">
               {navLinks.map((link) => (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="text-foreground font-medium py-2 hover:text-primary transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </a>
+                link.isRoute ? (
+                  <Link
+                    key={link.label}
+                    to={link.href}
+                    className="text-foreground font-medium py-2 hover:text-primary transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </Link>
+                ) : (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    className="text-foreground font-medium py-2 hover:text-primary transition-colors"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {link.label}
+                  </a>
+                )
               ))}
 <Link to="/dashboard-interimaire" onClick={() => setIsMobileMenuOpen(false)}>
                 <Button variant="outline" size="lg" className="w-full">

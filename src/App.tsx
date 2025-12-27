@@ -14,6 +14,8 @@ import CandidatDetailPage from "./pages/entreprise/CandidatDetailPage";
 import MissionsPage from "./pages/interimaire/MissionsPage";
 import ProfilPage from "./pages/interimaire/ProfilPage";
 import MissionDetailPage from "./pages/interimaire/MissionDetailPage";
+import NosInterimaires from "./pages/NosInterimaires";
+import NosClients from "./pages/NosClients";
 
 const queryClient = new QueryClient();
 
@@ -25,6 +27,8 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/nos-interimaires" element={<NosInterimaires />} />
+          <Route path="/nos-clients" element={<NosClients />} />
           <Route path="/dashboard-entreprise" element={<DashboardEntreprise />} />
           <Route path="/dashboard-entreprise/offres" element={<OffresPage />} />
           <Route path="/dashboard-entreprise/offres/:id" element={<OffreDetailPage />} />
