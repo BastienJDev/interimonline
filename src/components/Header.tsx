@@ -20,7 +20,7 @@ const Header = () => {
     { label: "Accueil", href: "/", isRoute: true },
     { label: "Nos Intérimaires", href: "/nos-interimaires", isRoute: true },
     { label: "Nos Clients", href: "/nos-clients", isRoute: true },
-    { label: "Nos Services", href: "/#services", isRoute: false },
+    { label: "Nos Services", href: "/nos-services", isRoute: true },
     { label: "Contact", href: "/#contact", isRoute: false },
   ];
 
