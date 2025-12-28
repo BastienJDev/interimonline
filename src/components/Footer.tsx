@@ -16,12 +16,6 @@ const Footer = () => {
       { label: "Espace Intérimaire", href: "/dashboard-interimaire" },
       { label: "Espace Recruteur", href: "/dashboard-entreprise" },
     ],
-    resources: [
-      { label: "Blog", href: "#" },
-      { label: "FAQ", href: "#" },
-      { label: "Guides métiers", href: "#" },
-      { label: "Actualités BTP", href: "#" },
-    ],
     legal: [
       { label: "Mentions légales", href: "#" },
       { label: "Politique de confidentialité", href: "#" },
@@ -33,7 +27,7 @@ const Footer = () => {
     <footer id="contact" className="bg-secondary text-secondary-foreground">
       {/* Main Footer */}
       <div className="container mx-auto px-4 py-16">
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand & Contact */}
           <div className="lg:col-span-2">
             <p className="text-secondary-foreground/70 mb-6 max-w-sm">
@@ -78,20 +72,6 @@ const Footer = () => {
                   <Link to={link.href} className="text-secondary-foreground/70 hover:text-primary transition-colors">
                     {link.label}
                   </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Resources */}
-          <div>
-            <h4 className="font-bold text-secondary-foreground mb-4">Ressources</h4>
-            <ul className="space-y-3">
-              {footerLinks.resources.map((link) => (
-                <li key={link.label}>
-                  <a href={link.href} className="text-secondary-foreground/70 hover:text-primary transition-colors">
-                    {link.label}
-                  </a>
                 </li>
               ))}
             </ul>
