@@ -8,8 +8,6 @@ const Footer = () => {
     services: [
       { label: "Recrutement BTP", href: "#" },
       { label: "Intérim Industrie", href: "#" },
-      { label: "CDI Intérimaire", href: "#" },
-      { label: "Formation", href: "#" },
     ],
     espaces: [
       { label: "Nous rejoindre", href: "/nous-rejoindre" },
