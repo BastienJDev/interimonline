@@ -92,12 +92,12 @@ const Header = () => {
               01 40 34 10 45
             </a>
             <Link to="/dashboard-interimaire">
-              <Button variant="outline" size="lg">
+              <Button variant="outline" size="sm">
                 Espace Intérimaire
               </Button>
             </Link>
             <Link to="/dashboard-entreprise">
-              <Button variant="cta" size="lg">
+              <Button variant="cta" size="sm">
                 Espace Recruteur
               </Button>
             </Link>
