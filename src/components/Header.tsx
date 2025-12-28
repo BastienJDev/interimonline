@@ -91,16 +91,49 @@ const Header = () => {
               <Phone className="w-4 h-4" />
               01 40 34 10 45
             </a>
-            <Link to="/dashboard-interimaire">
-              <Button variant="outline" size="sm">
-                Espace Intérimaire
-              </Button>
-            </Link>
-            <Link to="/dashboard-entreprise">
-              <Button variant="cta" size="sm">
-                Espace Recruteur
-              </Button>
-            </Link>
+            {/* Dropdown Intérimaire */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                  Intérimaire
+                  <ChevronDown className="w-3 h-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-card">
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard-interimaire" className="w-full cursor-pointer">
+                    Mon espace
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/nous-rejoindre-interimaire" className="w-full cursor-pointer">
+                    Nous rejoindre
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Dropdown Recruteur */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="cta" size="sm" className="flex items-center gap-1">
+                  Recruteur
+                  <ChevronDown className="w-3 h-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-card">
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard-entreprise" className="w-full cursor-pointer">
+                    Mon espace
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/nous-rejoindre-recruteur" className="w-full cursor-pointer">
+                    Nous rejoindre
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Mobile Menu Button */}
@@ -154,16 +187,43 @@ const Header = () => {
                 Contact
               </a>
 
-              <Link to="/dashboard-interimaire" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button variant="outline" size="lg" className="w-full">
-                  Espace Intérimaire
-                </Button>
-              </Link>
-              <Link to="/dashboard-entreprise" onClick={() => setIsMobileMenuOpen(false)}>
-                <Button variant="cta" size="lg" className="w-full mt-2">
-                  Espace Recruteur
-                </Button>
-              </Link>
+              {/* Section Intérimaire en mobile */}
+              <div className="border-t border-border pt-2">
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">Intérimaire</span>
+                <Link
+                  to="/dashboard-interimaire"
+                  className="text-foreground font-medium py-2 hover:text-primary transition-colors block pl-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Mon espace
+                </Link>
+                <Link
+                  to="/nous-rejoindre-interimaire"
+                  className="text-foreground font-medium py-2 hover:text-primary transition-colors block pl-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Nous rejoindre
+                </Link>
+              </div>
+
+              {/* Section Recruteur en mobile */}
+              <div className="border-t border-border pt-2">
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">Recruteur</span>
+                <Link
+                  to="/dashboard-entreprise"
+                  className="text-foreground font-medium py-2 hover:text-primary transition-colors block pl-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Mon espace
+                </Link>
+                <Link
+                  to="/nous-rejoindre-recruteur"
+                  className="text-foreground font-medium py-2 hover:text-primary transition-colors block pl-2"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Nous rejoindre
+                </Link>
+              </div>
             </nav>
           </div>
         )}
