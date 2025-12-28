@@ -1,4 +1,5 @@
 import { Phone, Mail, MapPin, Linkedin, Facebook, Twitter } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -10,11 +11,10 @@ const Footer = () => {
       { label: "CDI Intérimaire", href: "#" },
       { label: "Formation", href: "#" },
     ],
-    company: [
-      { label: "À propos", href: "#" },
-      { label: "Notre équipe", href: "#" },
-      { label: "Nos agences", href: "#" },
-      { label: "Carrières", href: "#" },
+    espaces: [
+      { label: "Nous rejoindre", href: "/nous-rejoindre" },
+      { label: "Espace Intérimaire", href: "/dashboard-interimaire" },
+      { label: "Espace Recruteur", href: "/dashboard-entreprise" },
     ],
     resources: [
       { label: "Blog", href: "#" },
@@ -69,15 +69,15 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Company */}
+          {/* Espaces */}
           <div>
-            <h4 className="font-bold text-secondary-foreground mb-4">Entreprise</h4>
+            <h4 className="font-bold text-secondary-foreground mb-4">Mon Espace</h4>
             <ul className="space-y-3">
-              {footerLinks.company.map((link) => (
+              {footerLinks.espaces.map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-secondary-foreground/70 hover:text-primary transition-colors">
+                  <Link to={link.href} className="text-secondary-foreground/70 hover:text-primary transition-colors">
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
