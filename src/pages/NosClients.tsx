@@ -97,13 +97,6 @@ const clients = [
   },
 ];
 
-const stats = [
-  { label: "Entreprises partenaires", value: "150+" },
-  { label: "Intérimaires placés", value: "2500+" },
-  { label: "Missions réalisées", value: "8000+" },
-  { label: "Satisfaction client", value: "98%" },
-];
-
 const NosClients = () => {
   return (
     <div className="min-h-screen bg-background">
@@ -126,18 +119,6 @@ const NosClients = () => {
                 Ils nous font confiance pour leurs recrutements. Découvrez nos entreprises partenaires.
               </p>
             </div>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center p-6 bg-card rounded-xl shadow-card">
-                <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
-              </div>
-            ))}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
