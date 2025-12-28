@@ -91,45 +91,30 @@ const Header = () => {
               <Phone className="w-4 h-4" />
               01 40 34 10 45
             </a>
-            {/* Dropdown Intérimaire */}
+            {/* Lien Nous rejoindre */}
+            <Link to="/nous-rejoindre">
+              <Button variant="outline" size="sm">
+                Nous rejoindre
+              </Button>
+            </Link>
+
+            {/* Dropdown Mon Espace */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="flex items-center gap-1">
-                  Intérimaire
+                <Button variant="cta" size="sm" className="flex items-center gap-1">
+                  Mon Espace
                   <ChevronDown className="w-3 h-3" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="bg-card">
                 <DropdownMenuItem asChild>
                   <Link to="/dashboard-interimaire" className="w-full cursor-pointer">
-                    Mon espace
+                    Espace Intérimaire
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/nous-rejoindre-interimaire" className="w-full cursor-pointer">
-                    Nous rejoindre
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Dropdown Recruteur */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="cta" size="sm" className="flex items-center gap-1">
-                  Recruteur
-                  <ChevronDown className="w-3 h-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-card">
                 <DropdownMenuItem asChild>
                   <Link to="/dashboard-entreprise" className="w-full cursor-pointer">
-                    Mon espace
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/nous-rejoindre-recruteur" className="w-full cursor-pointer">
-                    Nous rejoindre
+                    Espace Recruteur
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -187,41 +172,31 @@ const Header = () => {
                 Contact
               </a>
 
-              {/* Section Intérimaire en mobile */}
+              {/* Nous rejoindre en mobile */}
+              <Link
+                to="/nous-rejoindre"
+                className="text-foreground font-medium py-2 hover:text-primary transition-colors border-t border-border pt-4"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Nous rejoindre
+              </Link>
+
+              {/* Section Mon Espace en mobile */}
               <div className="border-t border-border pt-2">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">Intérimaire</span>
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">Mon Espace</span>
                 <Link
                   to="/dashboard-interimaire"
                   className="text-foreground font-medium py-2 hover:text-primary transition-colors block pl-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Mon espace
+                  Espace Intérimaire
                 </Link>
-                <Link
-                  to="/nous-rejoindre-interimaire"
-                  className="text-foreground font-medium py-2 hover:text-primary transition-colors block pl-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Nous rejoindre
-                </Link>
-              </div>
-
-              {/* Section Recruteur en mobile */}
-              <div className="border-t border-border pt-2">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">Recruteur</span>
                 <Link
                   to="/dashboard-entreprise"
                   className="text-foreground font-medium py-2 hover:text-primary transition-colors block pl-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
-                  Mon espace
-                </Link>
-                <Link
-                  to="/nous-rejoindre-recruteur"
-                  className="text-foreground font-medium py-2 hover:text-primary transition-colors block pl-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Nous rejoindre
+                  Espace Recruteur
                 </Link>
               </div>
             </nav>
