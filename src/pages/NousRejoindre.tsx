@@ -1,0 +1,424 @@
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { HardHat, Building2, ArrowLeft, ArrowRight, Check, Upload } from "lucide-react";
+import { Link } from "react-router-dom";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+
+type UserType = "interimaire" | "recruteur" | null;
+
+const NousRejoindre = () => {
+  const [userType, setUserType] = useState<UserType>(null);
+  const [currentStep, setCurrentStep] = useState(1);
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    } else {
+      setUserType(null);
+    }
+  };
+
+  const handleNext = () => {
+    if (userType === "interimaire" && currentStep < 3) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  // Choix initial
+  if (!userType) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <main className="flex-1 flex items-center justify-center py-16 px-4">
+          <div className="max-w-4xl w-full">
+            <div className="text-center mb-12">
+              <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+                Rejoignez-nous
+              </h1>
+              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                Que vous soyez à la recherche d'une mission ou d'un talent, nous avons la solution pour vous.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Card Intérimaire */}
+              <Card 
+                className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border-2 hover:border-primary"
+                onClick={() => setUserType("interimaire")}
+              >
+                <CardHeader className="text-center pb-4">
+                  <div className="mx-auto w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                    <HardHat className="w-10 h-10 text-primary" />
+                  </div>
+                  <CardTitle className="text-2xl">Je suis Intérimaire</CardTitle>
+                  <CardDescription className="text-base">
+                    Trouvez des missions adaptées à vos compétences
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3 text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-primary" />
+                    <span>Accédez à des missions dans le BTP et l'industrie</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-primary" />
+                    <span>Gérez vos contrats et documents en ligne</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-primary" />
+                    <span>Accompagnement personnalisé</span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Card Recruteur */}
+              <Card 
+                className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border-2 hover:border-primary"
+                onClick={() => setUserType("recruteur")}
+              >
+                <CardHeader className="text-center pb-4">
+                  <div className="mx-auto w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                    <Building2 className="w-10 h-10 text-primary" />
+                  </div>
+                  <CardTitle className="text-2xl">Je suis Recruteur</CardTitle>
+                  <CardDescription className="text-base">
+                    Trouvez les talents dont vous avez besoin
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3 text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-primary" />
+                    <span>Accédez à un vivier de candidats qualifiés</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-primary" />
+                    <span>Publiez vos offres rapidement</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="w-5 h-5 text-primary" />
+                    <span>Gestion simplifiée des contrats</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <p className="text-center mt-8 text-muted-foreground">
+              Vous avez déjà un compte ?{" "}
+              <Link to="/connexion" className="text-primary hover:underline font-medium">
+                Connectez-vous
+              </Link>
+            </p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Formulaire Intérimaire (multi-étapes)
+  if (userType === "interimaire") {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <main className="flex-1 flex items-center justify-center py-16 px-4">
+          <div className="max-w-2xl w-full">
+            <Card className="shadow-xl">
+              <CardHeader>
+                <div className="flex items-center gap-4 mb-4">
+                  <Button variant="ghost" size="icon" onClick={handleBack}>
+                    <ArrowLeft className="w-5 h-5" />
+                  </Button>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <HardHat className="w-6 h-6 text-primary" />
+                      <CardTitle>Inscription Intérimaire</CardTitle>
+                    </div>
+                    <CardDescription>Étape {currentStep} sur 3</CardDescription>
+                  </div>
+                </div>
+                {/* Progress bar */}
+                <div className="flex gap-2">
+                  {[1, 2, 3].map((step) => (
+                    <div
+                      key={step}
+                      className={`h-2 flex-1 rounded-full transition-colors ${
+                        step <= currentStep ? "bg-primary" : "bg-muted"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Étape 1: Informations personnelles */}
+                {currentStep === 1 && (
+                  <div className="space-y-4 animate-fade-in">
+                    <h3 className="text-lg font-semibold">Informations personnelles</h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="prenom">Prénom *</Label>
+                        <Input id="prenom" placeholder="Votre prénom" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="nom">Nom *</Label>
+                        <Input id="nom" placeholder="Votre nom" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email">Email *</Label>
+                      <Input id="email" type="email" placeholder="votre@email.com" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="telephone">Téléphone *</Label>
+                      <Input id="telephone" type="tel" placeholder="06 12 34 56 78" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="password">Mot de passe *</Label>
+                      <Input id="password" type="password" placeholder="••••••••" />
+                    </div>
+                  </div>
+                )}
+
+                {/* Étape 2: Expérience professionnelle */}
+                {currentStep === 2 && (
+                  <div className="space-y-4 animate-fade-in">
+                    <h3 className="text-lg font-semibold">Expérience professionnelle</h3>
+                    <div className="space-y-2">
+                      <Label htmlFor="metier">Métier principal *</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionnez votre métier" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="macon">Maçon</SelectItem>
+                          <SelectItem value="electricien">Électricien</SelectItem>
+                          <SelectItem value="plombier">Plombier</SelectItem>
+                          <SelectItem value="carreleur">Carreleur</SelectItem>
+                          <SelectItem value="peintre">Peintre</SelectItem>
+                          <SelectItem value="charpentier">Charpentier</SelectItem>
+                          <SelectItem value="conducteur">Conducteur d'engins</SelectItem>
+                          <SelectItem value="manoeuvre">Manœuvre</SelectItem>
+                          <SelectItem value="autre">Autre</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="experience">Années d'expérience *</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionnez" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="0-1">Moins d'1 an</SelectItem>
+                          <SelectItem value="1-3">1 à 3 ans</SelectItem>
+                          <SelectItem value="3-5">3 à 5 ans</SelectItem>
+                          <SelectItem value="5-10">5 à 10 ans</SelectItem>
+                          <SelectItem value="10+">Plus de 10 ans</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="competences">Compétences additionnelles</Label>
+                      <Textarea 
+                        id="competences" 
+                        placeholder="Décrivez vos compétences, certifications, habilitations..."
+                        rows={4}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Étape 3: Disponibilité et CV */}
+                {currentStep === 3 && (
+                  <div className="space-y-4 animate-fade-in">
+                    <h3 className="text-lg font-semibold">Disponibilité et documents</h3>
+                    <div className="space-y-2">
+                      <Label htmlFor="disponibilite">Disponibilité *</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionnez" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="immediate">Immédiate</SelectItem>
+                          <SelectItem value="1semaine">Sous 1 semaine</SelectItem>
+                          <SelectItem value="2semaines">Sous 2 semaines</SelectItem>
+                          <SelectItem value="1mois">Sous 1 mois</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="mobilite">Zone de mobilité *</Label>
+                      <Input id="mobilite" placeholder="Ex: Paris et Île-de-France" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>CV (optionnel)</Label>
+                      <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer">
+                        <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-muted-foreground">
+                          Glissez votre CV ici ou <span className="text-primary">parcourir</span>
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">PDF, DOC ou DOCX (max. 5 Mo)</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Boutons de navigation */}
+                <div className="flex justify-between pt-4">
+                  <Button variant="outline" onClick={handleBack}>
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Retour
+                  </Button>
+                  {currentStep < 3 ? (
+                    <Button onClick={handleNext}>
+                      Suivant
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Button>
+                  ) : (
+                    <Button variant="cta">
+                      <Check className="w-4 h-4 mr-2" />
+                      Créer mon compte
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Formulaire Recruteur (complet)
+  if (userType === "recruteur") {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <main className="flex-1 flex items-center justify-center py-16 px-4">
+          <div className="max-w-2xl w-full">
+            <Card className="shadow-xl">
+              <CardHeader>
+                <div className="flex items-center gap-4">
+                  <Button variant="ghost" size="icon" onClick={handleBack}>
+                    <ArrowLeft className="w-5 h-5" />
+                  </Button>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-6 h-6 text-primary" />
+                      <CardTitle>Inscription Recruteur</CardTitle>
+                    </div>
+                    <CardDescription>Créez votre compte entreprise</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Informations personnelles */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold border-b pb-2">Vos informations</h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="prenom-rec">Prénom *</Label>
+                      <Input id="prenom-rec" placeholder="Votre prénom" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="nom-rec">Nom *</Label>
+                      <Input id="nom-rec" placeholder="Votre nom" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email-rec">Email professionnel *</Label>
+                    <Input id="email-rec" type="email" placeholder="votre@entreprise.com" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="telephone-rec">Téléphone *</Label>
+                    <Input id="telephone-rec" type="tel" placeholder="06 12 34 56 78" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password-rec">Mot de passe *</Label>
+                    <Input id="password-rec" type="password" placeholder="••••••••" />
+                  </div>
+                </div>
+
+                {/* Informations entreprise */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold border-b pb-2">Votre entreprise</h3>
+                  <div className="space-y-2">
+                    <Label htmlFor="entreprise">Nom de l'entreprise *</Label>
+                    <Input id="entreprise" placeholder="Nom de votre société" />
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="siret">Numéro SIRET *</Label>
+                      <Input id="siret" placeholder="XXX XXX XXX XXXXX" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="secteur">Secteur d'activité *</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionnez" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="btp">BTP / Construction</SelectItem>
+                          <SelectItem value="industrie">Industrie</SelectItem>
+                          <SelectItem value="logistique">Logistique</SelectItem>
+                          <SelectItem value="transport">Transport</SelectItem>
+                          <SelectItem value="autre">Autre</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="effectif">Nombre d'employés *</Label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionnez" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1-10">1 à 10 employés</SelectItem>
+                        <SelectItem value="11-50">11 à 50 employés</SelectItem>
+                        <SelectItem value="51-200">51 à 200 employés</SelectItem>
+                        <SelectItem value="201-500">201 à 500 employés</SelectItem>
+                        <SelectItem value="500+">Plus de 500 employés</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Bouton submit */}
+                <div className="pt-4">
+                  <Button variant="cta" className="w-full">
+                    <Check className="w-4 h-4 mr-2" />
+                    Créer mon compte entreprise
+                  </Button>
+                </div>
+
+                <p className="text-center text-sm text-muted-foreground">
+                  En créant un compte, vous acceptez nos{" "}
+                  <Link to="#" className="text-primary hover:underline">
+                    conditions d'utilisation
+                  </Link>{" "}
+                  et notre{" "}
+                  <Link to="#" className="text-primary hover:underline">
+                    politique de confidentialité
+                  </Link>
+                  .
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  return null;
+};
+
+export default NousRejoindre;
