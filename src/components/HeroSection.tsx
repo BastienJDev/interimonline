@@ -22,7 +22,7 @@ const HeroSection = () => {
           {/* Headline */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-primary-foreground leading-tight mb-6 animate-fade-up animation-delay-100">
             Trouvez les meilleurs{" "}
-            <span className="text-gradient">talents BTP</span> en quelques clics
+            <span className="text-gradient">talents du BTP</span> en quelques clics
           </h1>
 
           {/* Subheadline */}
