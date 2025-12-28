@@ -1,7 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Phone } from "lucide-react";
+import { Menu, X, Phone, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import logo from "@/assets/logo.png";
 
 const Header = () => {
@@ -16,12 +22,14 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
+  const mainLinks = [
     { label: "Accueil", href: "/", isRoute: true },
+    { label: "Nos Services", href: "/nos-services", isRoute: true },
+  ];
+
+  const discoverLinks = [
     { label: "Nos Intérimaires", href: "/nos-interimaires", isRoute: true },
     { label: "Nos Clients", href: "/nos-clients", isRoute: true },
-    { label: "Nos Services", href: "/nos-services", isRoute: true },
-    { label: "Contact", href: "/#contact", isRoute: false },
   ];
 
   return (
@@ -33,31 +41,48 @@ const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <a href="#" className="flex items-center">
+          <Link to="/" className="flex items-center">
             <img src={logo} alt="Interim Online Pro-Tech" className="h-10" />
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              link.isRoute ? (
-                <Link
-                  key={link.label}
-                  to={link.href}
-                  className="text-sm font-medium transition-colors hover:text-primary text-foreground"
-                >
-                  {link.label}
-                </Link>
-              ) : (
-                <a
-                  key={link.label}
-                  href={link.href}
-                  className="text-sm font-medium transition-colors hover:text-primary text-foreground"
-                >
-                  {link.label}
-                </a>
-              )
+          <nav className="hidden lg:flex items-center gap-6">
+            {mainLinks.map((link) => (
+              <Link
+                key={link.label}
+                to={link.href}
+                className="text-sm font-medium transition-colors hover:text-primary text-foreground"
+              >
+                {link.label}
+              </Link>
             ))}
+
+            {/* Dropdown Découvrir */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary text-foreground outline-none">
+                Découvrir
+                <ChevronDown className="w-4 h-4" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="center" className="bg-card">
+                {discoverLinks.map((link) => (
+                  <DropdownMenuItem key={link.label} asChild>
+                    <Link
+                      to={link.href}
+                      className="w-full cursor-pointer"
+                    >
+                      {link.label}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <a
+              href="/#contact"
+              className="text-sm font-medium transition-colors hover:text-primary text-foreground"
+            >
+              Contact
+            </a>
           </nav>
 
           {/* CTA Buttons */}
@@ -66,7 +91,7 @@ const Header = () => {
               <Phone className="w-4 h-4" />
               01 40 34 10 45
             </a>
-<Link to="/dashboard-interimaire">
+            <Link to="/dashboard-interimaire">
               <Button variant="outline" size="lg">
                 Espace Intérimaire
               </Button>
@@ -95,28 +120,41 @@ const Header = () => {
         {isMobileMenuOpen && (
           <div className="lg:hidden bg-card rounded-lg shadow-card p-6 mb-4 animate-scale-in">
             <nav className="flex flex-col gap-4">
-              {navLinks.map((link) => (
-                link.isRoute ? (
+              {mainLinks.map((link) => (
+                <Link
+                  key={link.label}
+                  to={link.href}
+                  className="text-foreground font-medium py-2 hover:text-primary transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              
+              {/* Section Découvrir en mobile */}
+              <div className="border-t border-border pt-2">
+                <span className="text-xs text-muted-foreground uppercase tracking-wider">Découvrir</span>
+                {discoverLinks.map((link) => (
                   <Link
                     key={link.label}
                     to={link.href}
-                    className="text-foreground font-medium py-2 hover:text-primary transition-colors"
+                    className="text-foreground font-medium py-2 hover:text-primary transition-colors block pl-2"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {link.label}
                   </Link>
-                ) : (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    className="text-foreground font-medium py-2 hover:text-primary transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {link.label}
-                  </a>
-                )
-              ))}
-<Link to="/dashboard-interimaire" onClick={() => setIsMobileMenuOpen(false)}>
+                ))}
+              </div>
+
+              <a
+                href="/#contact"
+                className="text-foreground font-medium py-2 hover:text-primary transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Contact
+              </a>
+
+              <Link to="/dashboard-interimaire" onClick={() => setIsMobileMenuOpen(false)}>
                 <Button variant="outline" size="lg" className="w-full">
                   Espace Intérimaire
                 </Button>
