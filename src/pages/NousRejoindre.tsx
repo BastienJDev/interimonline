@@ -370,6 +370,12 @@ const NousRejoindre = () => {
                       <Input id="siret" placeholder="XXX XXX XXX XXXXX" />
                     </div>
                     <div className="space-y-2">
+                      <Label htmlFor="ville-entreprise">Ville *</Label>
+                      <Input id="ville-entreprise" placeholder="Ex: Paris, Lyon, Marseille..." />
+                    </div>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
                       <Label htmlFor="secteur">Secteur d'activité *</Label>
                       <Select>
                         <SelectTrigger>
@@ -377,28 +383,49 @@ const NousRejoindre = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="btp">BTP / Construction</SelectItem>
+                          <SelectItem value="energie">Énergie & Électricité</SelectItem>
+                          <SelectItem value="travaux-publics">Travaux Publics</SelectItem>
                           <SelectItem value="industrie">Industrie</SelectItem>
                           <SelectItem value="logistique">Logistique</SelectItem>
                           <SelectItem value="transport">Transport</SelectItem>
+                          <SelectItem value="geotechnique">Géotechnique</SelectItem>
+                          <SelectItem value="services-energetiques">Services énergétiques</SelectItem>
                           <SelectItem value="autre">Autre</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="effectif">Nombre d'employés *</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionnez" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1-10">1 à 10 employés</SelectItem>
+                          <SelectItem value="11-50">11 à 50 employés</SelectItem>
+                          <SelectItem value="51-200">51 à 200 employés</SelectItem>
+                          <SelectItem value="201-500">201 à 500 employés</SelectItem>
+                          <SelectItem value="500+">Plus de 500 employés</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="effectif">Nombre d'employés *</Label>
-                    <Select>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Sélectionnez" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1-10">1 à 10 employés</SelectItem>
-                        <SelectItem value="11-50">11 à 50 employés</SelectItem>
-                        <SelectItem value="51-200">51 à 200 employés</SelectItem>
-                        <SelectItem value="201-500">201 à 500 employés</SelectItem>
-                        <SelectItem value="500+">Plus de 500 employés</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="description-entreprise">Description de l'entreprise *</Label>
+                    <Textarea 
+                      id="description-entreprise" 
+                      placeholder="Décrivez votre entreprise en quelques mots..."
+                      rows={3}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="specialites">Spécialités *</Label>
+                    <Textarea 
+                      id="specialites" 
+                      placeholder="Ex: Gros œuvre, Génie civil, Bâtiment, Électricité industrielle..."
+                      rows={2}
+                    />
+                    <p className="text-xs text-muted-foreground">Séparez les spécialités par des virgules</p>
                   </div>
                 </div>
 
