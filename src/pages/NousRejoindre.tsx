@@ -233,21 +233,33 @@ const NousRejoindre = () => {
                   </div>
                 )}
 
-                {/* Étape 3: Disponibilité et CV */}
+                {/* Étape 3: Questions et CV */}
                 {currentStep === 3 && (
                   <div className="space-y-4 animate-fade-in">
-                    <h3 className="text-lg font-semibold">Disponibilité et documents</h3>
+                    <h3 className="text-lg font-semibold">Questions et documents</h3>
                     <div className="space-y-2">
-                      <Label htmlFor="disponibilite">Disponibilité *</Label>
+                      <Label htmlFor="permis">Avez-vous le permis de conduire ? *</Label>
                       <Select>
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionnez" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="immediate">Immédiate</SelectItem>
-                          <SelectItem value="1semaine">Sous 1 semaine</SelectItem>
-                          <SelectItem value="2semaines">Sous 2 semaines</SelectItem>
-                          <SelectItem value="1mois">Sous 1 mois</SelectItem>
+                          <SelectItem value="oui">Oui</SelectItem>
+                          <SelectItem value="non">Non</SelectItem>
+                          <SelectItem value="en-cours">En cours d'obtention</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="deplacement">Êtes-vous d'accord de partir en déplacement ? *</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Sélectionnez" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="oui">Oui</SelectItem>
+                          <SelectItem value="non">Non</SelectItem>
+                          <SelectItem value="occasionnel">Occasionnellement</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
