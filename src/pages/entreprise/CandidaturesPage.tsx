@@ -268,23 +268,15 @@ const CandidaturesPage = () => {
                 </div>
               </div>
 
-              <div className="grid gap-4">
-                <div className="flex items-center gap-3 text-sm">
-                  <Mail className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground">{selectedCandidat.email}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <Phone className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground">{selectedCandidat.telephone}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <MapPin className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground">{selectedCandidat.ville}</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-foreground">Disponibilité: {selectedCandidat.disponibilite}</span>
-                </div>
+              <div className="p-4 bg-muted/50 rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">
+                  Les coordonnées du candidat seront disponibles après validation par notre équipe.
+                </p>
+              </div>
+
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm font-medium text-foreground mb-1">Expérience</p>
+                <p className="text-sm text-muted-foreground">{selectedCandidat.experience} d'expérience dans le domaine</p>
               </div>
 
               <div className="p-4 bg-muted/50 rounded-lg">
@@ -296,10 +288,6 @@ const CandidaturesPage = () => {
                 <Button variant="outline" className="flex-1">
                   <FileText className="w-4 h-4 mr-2" />
                   Voir CV
-                </Button>
-                <Button variant="cta" className="flex-1">
-                  <Phone className="w-4 h-4 mr-2" />
-                  Contacter
                 </Button>
               </div>
             </div>

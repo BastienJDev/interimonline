@@ -128,10 +128,6 @@ const CandidatDetailPage = () => {
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline">
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Envoyer un message
-              </Button>
               <Button variant="outline" className="text-green-600 hover:text-green-700 hover:bg-green-50">
                 <CheckCircle className="w-4 h-4 mr-2" />
                 Accepter
