@@ -203,8 +203,16 @@ const OffresPage = () => {
                 </div>
               </div>
               <div className="grid gap-2">
+                <Label htmlFor="horaires">Horaires de travail</Label>
+                <Input id="horaires" placeholder="Ex: 7h-16h, du lundi au vendredi" />
+              </div>
+              <div className="grid gap-2">
                 <Label htmlFor="description">Description du poste</Label>
                 <Textarea id="description" placeholder="Décrivez les missions et compétences requises..." rows={4} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="avantages">Avantages</Label>
+                <Textarea id="avantages" placeholder="Ex: Panier repas, indemnités de déplacement, primes..." rows={2} />
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>Annuler</Button>
