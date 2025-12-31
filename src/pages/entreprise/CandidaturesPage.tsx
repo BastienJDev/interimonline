@@ -205,7 +205,7 @@ const CandidaturesPage = () => {
                         </span>
                       </div>
                       <div>
-                        <p className="font-medium text-foreground">{candidature.nom}</p>
+                        <p className="font-medium text-foreground">{candidature.nom.split(' ').map((n, i, arr) => i === arr.length - 1 ? n[0] + '.' : n).join(' ')}</p>
                         <p className="text-xs text-muted-foreground">{candidature.ville}</p>
                       </div>
                     </div>
@@ -263,7 +263,7 @@ const CandidaturesPage = () => {
                   </span>
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-foreground">{selectedCandidat.nom}</h3>
+                  <h3 className="text-lg font-semibold text-foreground">{selectedCandidat.nom.split(' ').map((n, i, arr) => i === arr.length - 1 ? n[0] + '.' : n).join(' ')}</h3>
                   <p className="text-muted-foreground">{selectedCandidat.poste}</p>
                 </div>
               </div>
