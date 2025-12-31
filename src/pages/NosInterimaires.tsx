@@ -143,7 +143,7 @@ const NosInterimaires = () => {
                   </div>
                   
                   <h3 className="text-lg font-semibold text-foreground mb-1">
-                    {interimaire.nom}
+                    {interimaire.nom.split(' ').map((n, i, arr) => i === arr.length - 1 ? n[0] + '.' : n).join(' ')}
                   </h3>
                   <p className="text-primary font-medium mb-3">{interimaire.metier}</p>
                   
