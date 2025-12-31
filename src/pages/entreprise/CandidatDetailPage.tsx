@@ -116,7 +116,7 @@ const CandidatDetailPage = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-foreground">
-                  {mockCandidat.prenom} {mockCandidat.nom}
+                  {mockCandidat.prenom} {mockCandidat.nom[0]}.
                 </h1>
                 <p className="text-muted-foreground mt-1">Candidature pour: {mockCandidat.candidature.poste}</p>
                 <div className="flex items-center gap-3 mt-3">
