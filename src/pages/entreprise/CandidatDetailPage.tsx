@@ -147,43 +147,13 @@ const CandidatDetailPage = () => {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           {/* Colonne gauche - Infos */}
           <div className="space-y-6">
-            {/* Coordonnées */}
+            {/* Coordonnées - Masquées pour les recruteurs */}
             <div className="bg-card rounded-xl p-6 shadow-card">
               <h2 className="text-lg font-semibold text-foreground mb-4">Coordonnées</h2>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Email</p>
-                    <a href={`mailto:${mockCandidat.email}`} className="text-sm font-medium text-primary hover:underline">
-                      {mockCandidat.email}
-                    </a>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
-                    <Phone className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Téléphone</p>
-                    <a href={`tel:${mockCandidat.telephone}`} className="text-sm font-medium text-foreground">
-                      {mockCandidat.telephone}
-                    </a>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
-                    <MapPin className="w-5 h-5 text-muted-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Adresse</p>
-                    <p className="text-sm font-medium text-foreground">
-                      {mockCandidat.adresse}, {mockCandidat.codePostal} {mockCandidat.ville}
-                    </p>
-                  </div>
-                </div>
+              <div className="p-4 bg-muted/50 rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">
+                  Les coordonnées du candidat seront disponibles après validation par notre équipe.
+                </p>
               </div>
             </div>
 
@@ -191,10 +161,6 @@ const CandidatDetailPage = () => {
             <div className="bg-card rounded-xl p-6 shadow-card">
               <h2 className="text-lg font-semibold text-foreground mb-4">Informations</h2>
               <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Date de naissance</span>
-                  <span className="text-sm font-medium text-foreground">{mockCandidat.dateNaissance}</span>
-                </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Permis</span>
                   <span className="text-sm font-medium text-foreground">{mockCandidat.permis}</span>
@@ -218,24 +184,13 @@ const CandidatDetailPage = () => {
               </div>
             </div>
 
-            {/* Documents */}
+            {/* Documents - Masqués pour les recruteurs */}
             <div className="bg-card rounded-xl p-6 shadow-card">
               <h2 className="text-lg font-semibold text-foreground mb-4">Documents</h2>
-              <div className="space-y-2">
-                {mockCandidat.documents.map((doc) => (
-                  <div key={doc.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted transition-colors">
-                    <div className="flex items-center gap-3">
-                      <FileText className="w-5 h-5 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{doc.nom}</p>
-                        <p className="text-xs text-muted-foreground">{doc.date}</p>
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Download className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
+              <div className="p-4 bg-muted/50 rounded-lg text-center">
+                <p className="text-sm text-muted-foreground">
+                  Les documents du candidat seront disponibles après validation par notre équipe.
+                </p>
               </div>
             </div>
           </div>
