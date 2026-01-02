@@ -208,7 +208,7 @@ export type Database = {
           sector: string | null
           siret: string | null
           updated_at: string
-          user_id: string
+          user_id: string | null
           user_type: string | null
           website: string | null
         }
@@ -239,7 +239,7 @@ export type Database = {
           sector?: string | null
           siret?: string | null
           updated_at?: string
-          user_id: string
+          user_id?: string | null
           user_type?: string | null
           website?: string | null
         }
@@ -270,7 +270,7 @@ export type Database = {
           sector?: string | null
           siret?: string | null
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
           user_type?: string | null
           website?: string | null
         }
