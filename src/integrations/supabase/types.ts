@@ -112,6 +112,59 @@ export type Database = {
         }
         Relationships: []
       }
+      mission_history: {
+        Row: {
+          candidat_id: string
+          created_at: string
+          date_debut: string | null
+          date_fin: string | null
+          entreprise_name: string
+          id: string
+          lieu: string | null
+          note: string | null
+          offre_id: string | null
+          status: string
+          titre: string
+          updated_at: string
+        }
+        Insert: {
+          candidat_id: string
+          created_at?: string
+          date_debut?: string | null
+          date_fin?: string | null
+          entreprise_name: string
+          id?: string
+          lieu?: string | null
+          note?: string | null
+          offre_id?: string | null
+          status?: string
+          titre: string
+          updated_at?: string
+        }
+        Update: {
+          candidat_id?: string
+          created_at?: string
+          date_debut?: string | null
+          date_fin?: string | null
+          entreprise_name?: string
+          id?: string
+          lieu?: string | null
+          note?: string | null
+          offre_id?: string | null
+          status?: string
+          titre?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mission_history_offre_id_fkey"
+            columns: ["offre_id"]
+            isOneToOne: false
+            referencedRelation: "offres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offres: {
         Row: {
           avantages: string | null
