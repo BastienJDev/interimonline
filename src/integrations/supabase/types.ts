@@ -123,6 +123,9 @@ export type Database = {
           lieu: string | null
           note: string | null
           offre_id: string | null
+          rated_at: string | null
+          rated_by: string | null
+          rating: number | null
           status: string
           titre: string
           updated_at: string
@@ -137,6 +140,9 @@ export type Database = {
           lieu?: string | null
           note?: string | null
           offre_id?: string | null
+          rated_at?: string | null
+          rated_by?: string | null
+          rating?: number | null
           status?: string
           titre: string
           updated_at?: string
@@ -151,6 +157,9 @@ export type Database = {
           lieu?: string | null
           note?: string | null
           offre_id?: string | null
+          rated_at?: string | null
+          rated_by?: string | null
+          rating?: number | null
           status?: string
           titre?: string
           updated_at?: string
