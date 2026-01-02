@@ -20,18 +20,22 @@ const navItems = [
 
 const AdminLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, rolesLoading, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!loading && !user) {
       navigate('/auth');
-    } else if (!loading && user && !isAdmin) {
+      return;
+    }
+
+    // Important: wait for roles to load before deciding access
+    if (!loading && !rolesLoading && user && !isAdmin) {
       navigate('/dashboard-entreprise');
     }
-  }, [user, loading, isAdmin, navigate]);
+  }, [user, loading, rolesLoading, isAdmin, navigate]);
 
-  if (loading) {
+  if (loading || rolesLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

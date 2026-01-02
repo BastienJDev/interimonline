@@ -1,5 +1,7 @@
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, Bell, User } from "lucide-react";
+import { Menu, Bell, User, Shield } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DashboardHeaderProps {
   title: string;
@@ -8,6 +10,9 @@ interface DashboardHeaderProps {
 }
 
 const DashboardHeader = ({ title, userName, onMenuClick }: DashboardHeaderProps) => {
+  const { isAdmin } = useAuth();
+  const showAdminCta = isAdmin && title !== "Administration";
+
   return (
     <header className="bg-card border-b border-border px-6 py-4">
       <div className="flex items-center justify-between">
@@ -21,7 +26,16 @@ const DashboardHeader = ({ title, userName, onMenuClick }: DashboardHeaderProps)
           <h1 className="text-xl font-bold text-foreground">{title}</h1>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          {showAdminCta && (
+            <Link to="/admin">
+              <Button variant="outline" size="sm" className="gap-2">
+                <Shield className="w-4 h-4" />
+                Administration
+              </Button>
+            </Link>
+          )}
+
           <button className="relative p-2 hover:bg-muted rounded-lg transition-colors">
             <Bell className="w-5 h-5 text-muted-foreground" />
             <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
