@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import InterimaireLayout from "./InterimaireLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { 
   Search, 
   MapPin,
@@ -12,7 +13,9 @@ import {
   Filter,
   Briefcase,
   Heart,
-  ChevronDown
+  Loader2,
+  CheckCircle,
+  Send,
 } from "lucide-react";
 import {
   Select,
@@ -24,122 +27,181 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { toast } from "@/hooks/use-toast";
 
-const mockMissions = [
-  { 
-    id: 1, 
-    titre: "Maçon qualifié", 
-    entreprise: "BTP Construct", 
-    lieu: "Paris 75", 
-    salaire: "14-16€/h",
-    type: "Mission",
-    duree: "3 mois",
-    date: "15/01/2025",
-    description: "Nous recherchons un maçon qualifié pour des travaux de construction neuve. Vous serez responsable de la réalisation d'ouvrages en béton, briques et parpaings.",
-    competences: ["Maçonnerie traditionnelle", "Lecture de plans", "Béton armé"],
-    avantages: ["Panier repas", "Indemnité transport", "Mutuelle"]
-  },
-  { 
-    id: 2, 
-    titre: "Électricien industriel", 
-    entreprise: "Indus Pro", 
-    lieu: "Lyon 69", 
-    salaire: "15-18€/h",
-    type: "CDI Intérimaire",
-    duree: "Long terme",
-    date: "14/01/2025",
-    description: "Mission longue durée pour installation et maintenance électrique industrielle dans une usine de production.",
-    competences: ["Habilitations électriques", "Câblage industriel", "Automatismes"],
-    avantages: ["13ème mois", "Prime de performance", "Formation continue"]
-  },
-  { 
-    id: 3, 
-    titre: "Soudeur TIG", 
-    entreprise: "Metal Works", 
-    lieu: "Marseille 13", 
-    salaire: "16-20€/h",
-    type: "Mission",
-    duree: "6 mois",
-    date: "13/01/2025",
-    description: "Soudure TIG sur acier inoxydable et aluminium pour la fabrication de structures métalliques.",
-    competences: ["Soudure TIG", "Lecture de plans", "Contrôle qualité"],
-    avantages: ["Prime qualité", "Équipement fourni", "Parking"]
-  },
-  { 
-    id: 4, 
-    titre: "Plombier chauffagiste", 
-    entreprise: "Confort Habitat", 
-    lieu: "Toulouse 31", 
-    salaire: "14-17€/h",
-    type: "Mission",
-    duree: "2 mois",
-    date: "12/01/2025",
-    description: "Installation et maintenance de systèmes de chauffage central et plomberie sanitaire.",
-    competences: ["Plomberie", "Chauffage", "Climatisation"],
-    avantages: ["Véhicule de service", "Téléphone", "Outillage"]
-  },
-  { 
-    id: 5, 
-    titre: "Carreleur", 
-    entreprise: "Rénov Express", 
-    lieu: "Bordeaux 33", 
-    salaire: "13-15€/h",
-    type: "Mission",
-    duree: "1 mois",
-    date: "11/01/2025",
-    description: "Pose de carrelage et faïence sur chantier de rénovation d'appartements.",
-    competences: ["Pose carrelage", "Découpe", "Joints"],
-    avantages: ["Panier repas", "IFM", "ICP"]
-  },
-  { 
-    id: 6, 
-    titre: "Chef d'équipe BTP", 
-    entreprise: "Construction Plus", 
-    lieu: "Nantes 44", 
-    salaire: "18-22€/h",
-    type: "CDI Intérimaire",
-    duree: "Long terme",
-    date: "10/01/2025",
-    description: "Encadrement d'une équipe de 5 à 10 personnes sur chantiers de gros œuvre.",
-    competences: ["Management", "Gestion de chantier", "Sécurité"],
-    avantages: ["Véhicule", "Prime encadrement", "Intéressement"]
-  },
-];
+interface Offre {
+  id: string;
+  titre: string;
+  description: string | null;
+  lieu: string;
+  type_contrat: string;
+  salaire_min: number | null;
+  salaire_max: number | null;
+  experience_requise: string | null;
+  horaires: string | null;
+  avantages: string | null;
+  date_debut: string | null;
+  date_fin: string | null;
+  created_at: string;
+}
 
-const secteurs = ["Tous", "BTP", "Industrie", "Électricité", "Plomberie"];
-const types = ["Tous", "Mission", "CDI Intérimaire", "CDD"];
+const types = ["Tous", "mission", "cdi", "cdd"];
 
 const MissionsPage = () => {
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
-  const [filterSecteur, setFilterSecteur] = useState("Tous");
   const [filterType, setFilterType] = useState("Tous");
   const [filterLieu, setFilterLieu] = useState("");
-  const [selectedMission, setSelectedMission] = useState<typeof mockMissions[0] | null>(null);
-  const [favoris, setFavoris] = useState<number[]>([]);
+  const [selectedMission, setSelectedMission] = useState<Offre | null>(null);
+  const [isPostulerDialogOpen, setIsPostulerDialogOpen] = useState(false);
+  const [favoris, setFavoris] = useState<string[]>([]);
 
-  const toggleFavori = (id: number) => {
+  // Fetch active offres
+  const { data: offres, isLoading } = useQuery({
+    queryKey: ['offres-interimaire'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('offres')
+        .select('*')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as Offre[];
+    },
+  });
+
+  // Fetch user's candidatures to check if already applied
+  const { data: mesCandidatures } = useQuery({
+    queryKey: ['mes-candidatures'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      // Get user's candidature ID from candidatures table
+      const { data: candidature } = await supabase
+        .from('candidatures')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!candidature) return [];
+
+      const { data, error } = await supabase
+        .from('offre_candidatures')
+        .select('offre_id')
+        .eq('candidat_id', candidature.id);
+      
+      if (error) return [];
+      return data.map(c => c.offre_id);
+    },
+  });
+
+  // Postuler mutation
+  const postulerMutation = useMutation({
+    mutationFn: async (offreId: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Non authentifié");
+
+      // Get user's candidature
+      const { data: candidature, error: candError } = await supabase
+        .from('candidatures')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (candError || !candidature) {
+        throw new Error("Profil candidat non trouvé. Veuillez compléter votre profil.");
+      }
+
+      const { error } = await supabase
+        .from('offre_candidatures')
+        .insert({
+          offre_id: offreId,
+          candidat_id: candidature.id,
+          type: 'candidature',
+          admin_status: 'en_attente',
+          entreprise_status: 'en_attente',
+        });
+
+      if (error) {
+        if (error.code === '23505') {
+          throw new Error("Vous avez déjà postulé à cette offre");
+        }
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mes-candidatures'] });
+      setIsPostulerDialogOpen(false);
+      setSelectedMission(null);
+      toast({ title: "Candidature envoyée !", description: "Votre candidature sera examinée par notre équipe." });
+    },
+    onError: (error: Error) => {
+      toast({ title: error.message, variant: "destructive" });
+    },
+  });
+
+  const toggleFavori = (id: string) => {
     setFavoris(prev => 
       prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id]
     );
   };
 
-  const filteredMissions = mockMissions.filter((mission) => {
-    const matchesSearch = mission.titre.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      mission.entreprise.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = filterType === "Tous" || mission.type === filterType;
-    const matchesLieu = !filterLieu || mission.lieu.toLowerCase().includes(filterLieu.toLowerCase());
+  const hasApplied = (offreId: string) => {
+    return mesCandidatures?.includes(offreId) || false;
+  };
+
+  const filteredMissions = offres?.filter((offre) => {
+    const matchesSearch = offre.titre.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      offre.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = filterType === "Tous" || offre.type_contrat === filterType;
+    const matchesLieu = !filterLieu || offre.lieu.toLowerCase().includes(filterLieu.toLowerCase());
     return matchesSearch && matchesType && matchesLieu;
-  });
+  }) || [];
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case "mission": return "Mission";
+      case "cdi": return "CDI Intérimaire";
+      case "cdd": return "CDD";
+      default: return type;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <InterimaireLayout title="Rechercher des missions">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </InterimaireLayout>
+    );
+  }
 
   return (
     <InterimaireLayout title="Rechercher des missions">
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Rechercher des missions</h1>
+        <h1 className="text-2xl font-bold text-foreground">Offres disponibles</h1>
         <p className="text-muted-foreground">Trouvez la mission qui correspond à vos compétences</p>
       </div>
 
@@ -149,7 +211,7 @@ const MissionsPage = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Métier, compétence, entreprise..."
+              placeholder="Métier, compétence..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
@@ -164,32 +226,16 @@ const MissionsPage = () => {
               className="pl-10"
             />
           </div>
-          <Button variant="cta" size="lg">
-            <Search className="w-4 h-4 mr-2" />
-            Rechercher
-          </Button>
-        </div>
-        <div className="flex flex-wrap gap-3">
           <Select value={filterType} onValueChange={setFilterType}>
             <SelectTrigger className="w-[160px]">
               <Briefcase className="w-4 h-4 mr-2" />
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent>
-              {types.map(type => (
-                <SelectItem key={type} value={type}>{type}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select value={filterSecteur} onValueChange={setFilterSecteur}>
-            <SelectTrigger className="w-[160px]">
-              <Filter className="w-4 h-4 mr-2" />
-              <SelectValue placeholder="Secteur" />
-            </SelectTrigger>
-            <SelectContent>
-              {secteurs.map(secteur => (
-                <SelectItem key={secteur} value={secteur}>{secteur}</SelectItem>
-              ))}
+              <SelectItem value="Tous">Tous les types</SelectItem>
+              <SelectItem value="mission">Mission</SelectItem>
+              <SelectItem value="cdi">CDI Intérimaire</SelectItem>
+              <SelectItem value="cdd">CDD</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -198,24 +244,14 @@ const MissionsPage = () => {
       {/* Results count */}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">{filteredMissions.length}</span> missions trouvées
+          <span className="font-semibold text-foreground">{filteredMissions.length}</span> offres disponibles
         </p>
-        <Select defaultValue="recent">
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Trier par" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="recent">Plus récentes</SelectItem>
-            <SelectItem value="salaire">Salaire décroissant</SelectItem>
-            <SelectItem value="pertinence">Pertinence</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       {/* Missions List */}
       <div className="grid gap-4">
-        {filteredMissions.map((mission) => (
-          <div key={mission.id} className="bg-card rounded-xl p-6 shadow-card hover:shadow-hover transition-shadow">
+        {filteredMissions.map((offre) => (
+          <div key={offre.id} className="bg-card rounded-xl p-6 shadow-card hover:shadow-hover transition-shadow">
             <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-start gap-4">
@@ -225,55 +261,72 @@ const MissionsPage = () => {
                   <div className="flex-1">
                     <div className="flex items-start justify-between">
                       <div>
-                        <h3 className="font-semibold text-lg text-foreground">{mission.titre}</h3>
-                        <p className="text-muted-foreground">{mission.entreprise}</p>
+                        <h3 className="font-semibold text-lg text-foreground">{offre.titre}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-1">
+                          {offre.description || "Pas de description"}
+                        </p>
                       </div>
                       <button 
-                        onClick={() => toggleFavori(mission.id)}
+                        onClick={() => toggleFavori(offre.id)}
                         className="p-2 hover:bg-muted rounded-lg transition-colors"
                       >
                         <Heart 
-                          className={`w-5 h-5 ${favoris.includes(mission.id) ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} 
+                          className={`w-5 h-5 ${favoris.includes(offre.id) ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} 
                         />
                       </button>
                     </div>
                     <div className="flex flex-wrap items-center gap-4 mt-3">
                       <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <MapPin className="w-4 h-4" /> {mission.lieu}
+                        <MapPin className="w-4 h-4" /> {offre.lieu}
                       </span>
-                      <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-                        <Euro className="w-4 h-4 text-primary" /> {mission.salaire}
-                      </span>
-                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <Clock className="w-4 h-4" /> {mission.duree}
-                      </span>
+                      {(offre.salaire_min || offre.salaire_max) && (
+                        <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                          <Euro className="w-4 h-4 text-primary" /> {offre.salaire_min}-{offre.salaire_max}€/h
+                        </span>
+                      )}
+                      {offre.experience_requise && (
+                        <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                          <Clock className="w-4 h-4" /> {offre.experience_requise}
+                        </span>
+                      )}
                     </div>
                     <div className="flex flex-wrap gap-2 mt-3">
-                      <span className="px-2.5 py-1 text-xs font-medium bg-accent text-accent-foreground rounded-full">
-                        {mission.type}
-                      </span>
-                      {mission.competences.slice(0, 2).map((comp, i) => (
-                        <span key={i} className="px-2.5 py-1 text-xs font-medium bg-muted text-muted-foreground rounded-full">
-                          {comp}
-                        </span>
-                      ))}
+                      <Badge variant="outline">{getTypeLabel(offre.type_contrat)}</Badge>
+                      {hasApplied(offre.id) && (
+                        <Badge className="bg-green-100 text-green-700">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Candidature envoyée
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-3 lg:flex-col lg:items-end">
-                <p className="text-xs text-muted-foreground">Publié le {mission.date}</p>
+                <p className="text-xs text-muted-foreground">
+                  Publié le {format(new Date(offre.created_at), 'dd/MM/yyyy', { locale: fr })}
+                </p>
                 <div className="flex gap-2">
-                  <Link to={`/dashboard-interimaire/missions/${mission.id}`}>
-                    <Button variant="outline" size="sm">
-                      Voir détails
-                    </Button>
-                  </Link>
-                  <Link to={`/dashboard-interimaire/missions/${mission.id}`}>
-                    <Button variant="cta" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setSelectedMission(offre)}
+                  >
+                    Voir détails
+                  </Button>
+                  {!hasApplied(offre.id) && (
+                    <Button 
+                      variant="cta" 
+                      size="sm"
+                      onClick={() => {
+                        setSelectedMission(offre);
+                        setIsPostulerDialogOpen(true);
+                      }}
+                    >
+                      <Send className="w-4 h-4 mr-1" />
                       Postuler
                     </Button>
-                  </Link>
+                  )}
                 </div>
               </div>
             </div>
@@ -282,16 +335,17 @@ const MissionsPage = () => {
       </div>
 
       {filteredMissions.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Aucune mission trouvée</p>
+        <div className="text-center py-12 bg-card rounded-xl shadow-card">
+          <Briefcase className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+          <p className="text-muted-foreground">Aucune offre disponible pour le moment</p>
         </div>
       )}
 
       {/* Mission Detail Dialog */}
-      <Dialog open={!!selectedMission} onOpenChange={() => setSelectedMission(null)}>
+      <Dialog open={!!selectedMission && !isPostulerDialogOpen} onOpenChange={() => setSelectedMission(null)}>
         <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Détail de la mission</DialogTitle>
+            <DialogTitle>Détail de l'offre</DialogTitle>
           </DialogHeader>
           {selectedMission && (
             <div className="space-y-6 py-4">
@@ -301,71 +355,103 @@ const MissionsPage = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-foreground">{selectedMission.titre}</h3>
-                  <p className="text-muted-foreground">{selectedMission.entreprise}</p>
                   <div className="flex items-center gap-3 mt-2">
-                    <span className="px-2.5 py-1 text-xs font-medium bg-accent text-accent-foreground rounded-full">
-                      {selectedMission.type}
-                    </span>
-                    <span className="text-sm text-muted-foreground">{selectedMission.duree}</span>
+                    <Badge variant="outline">{getTypeLabel(selectedMission.type_contrat)}</Badge>
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4 p-4 bg-muted/50 rounded-lg">
-                <div className="text-center">
+              <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
+                <div>
                   <p className="text-xs text-muted-foreground">Salaire</p>
-                  <p className="font-semibold text-foreground">{selectedMission.salaire}</p>
+                  <p className="font-semibold text-foreground">
+                    {selectedMission.salaire_min && selectedMission.salaire_max 
+                      ? `${selectedMission.salaire_min}-${selectedMission.salaire_max}€/h`
+                      : 'Non défini'}
+                  </p>
                 </div>
-                <div className="text-center">
+                <div>
                   <p className="text-xs text-muted-foreground">Lieu</p>
                   <p className="font-semibold text-foreground">{selectedMission.lieu}</p>
                 </div>
-                <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Durée</p>
-                  <p className="font-semibold text-foreground">{selectedMission.duree}</p>
-                </div>
+                {selectedMission.experience_requise && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">Expérience</p>
+                    <p className="font-semibold text-foreground">{selectedMission.experience_requise}</p>
+                  </div>
+                )}
+                {selectedMission.horaires && (
+                  <div>
+                    <p className="text-xs text-muted-foreground">Horaires</p>
+                    <p className="font-semibold text-foreground">{selectedMission.horaires}</p>
+                  </div>
+                )}
               </div>
 
-              <div>
-                <h4 className="font-semibold text-foreground mb-2">Description</h4>
-                <p className="text-sm text-muted-foreground">{selectedMission.description}</p>
-              </div>
-
-              <div>
-                <h4 className="font-semibold text-foreground mb-2">Compétences requises</h4>
-                <div className="flex flex-wrap gap-2">
-                  {selectedMission.competences.map((comp, i) => (
-                    <span key={i} className="px-3 py-1.5 text-sm font-medium bg-muted text-muted-foreground rounded-lg">
-                      {comp}
-                    </span>
-                  ))}
+              {selectedMission.description && (
+                <div>
+                  <h4 className="font-semibold text-foreground mb-2">Description</h4>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedMission.description}</p>
                 </div>
-              </div>
+              )}
 
-              <div>
-                <h4 className="font-semibold text-foreground mb-2">Avantages</h4>
-                <div className="flex flex-wrap gap-2">
-                  {selectedMission.avantages.map((av, i) => (
-                    <span key={i} className="px-3 py-1.5 text-sm font-medium bg-green-50 text-green-700 rounded-lg">
-                      ✓ {av}
-                    </span>
-                  ))}
+              {selectedMission.avantages && (
+                <div>
+                  <h4 className="font-semibold text-foreground mb-2">Avantages</h4>
+                  <p className="text-sm text-muted-foreground">{selectedMission.avantages}</p>
                 </div>
-              </div>
+              )}
 
               <div className="flex gap-3 pt-4">
                 <Button variant="outline" className="flex-1" onClick={() => toggleFavori(selectedMission.id)}>
                   <Heart className={`w-4 h-4 mr-2 ${favoris.includes(selectedMission.id) ? 'fill-red-500 text-red-500' : ''}`} />
                   {favoris.includes(selectedMission.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'}
                 </Button>
-                <Button variant="cta" className="flex-1">
-                  Postuler maintenant
-                </Button>
+                {!hasApplied(selectedMission.id) ? (
+                  <Button 
+                    variant="cta" 
+                    className="flex-1"
+                    onClick={() => setIsPostulerDialogOpen(true)}
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    Postuler maintenant
+                  </Button>
+                ) : (
+                  <Button variant="secondary" className="flex-1" disabled>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Candidature envoyée
+                  </Button>
+                )}
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Postuler Confirmation Dialog */}
+      <AlertDialog open={isPostulerDialogOpen} onOpenChange={setIsPostulerDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer votre candidature</AlertDialogTitle>
+            <AlertDialogDescription>
+              Vous êtes sur le point de postuler pour le poste de{' '}
+              <strong>{selectedMission?.titre}</strong>.
+              <br /><br />
+              Votre candidature sera examinée par notre équipe avant d'être transmise à l'entreprise.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => selectedMission && postulerMutation.mutate(selectedMission.id)}
+              disabled={postulerMutation.isPending}
+            >
+              {postulerMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Confirmer ma candidature
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
     </InterimaireLayout>
   );
