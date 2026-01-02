@@ -66,13 +66,70 @@ const NousRejoindre = () => {
     }
   };
 
+  const validateStep1 = () => {
+    if (!interimaireForm.prenom.trim()) {
+      toast({ title: 'Champ requis', description: 'Veuillez entrer votre prénom', variant: 'destructive' });
+      return false;
+    }
+    if (!interimaireForm.nom.trim()) {
+      toast({ title: 'Champ requis', description: 'Veuillez entrer votre nom', variant: 'destructive' });
+      return false;
+    }
+    if (!interimaireForm.email.trim() || !interimaireForm.email.includes('@')) {
+      toast({ title: 'Champ requis', description: 'Veuillez entrer un email valide', variant: 'destructive' });
+      return false;
+    }
+    if (!interimaireForm.telephone.trim()) {
+      toast({ title: 'Champ requis', description: 'Veuillez entrer votre téléphone', variant: 'destructive' });
+      return false;
+    }
+    if (!interimaireForm.password || interimaireForm.password.length < 6) {
+      toast({ title: 'Champ requis', description: 'Le mot de passe doit contenir au moins 6 caractères', variant: 'destructive' });
+      return false;
+    }
+    return true;
+  };
+
+  const validateStep2 = () => {
+    if (!interimaireForm.metier) {
+      toast({ title: 'Champ requis', description: 'Veuillez sélectionner votre métier', variant: 'destructive' });
+      return false;
+    }
+    if (!interimaireForm.experience) {
+      toast({ title: 'Champ requis', description: 'Veuillez sélectionner vos années d\'expérience', variant: 'destructive' });
+      return false;
+    }
+    return true;
+  };
+
+  const validateStep3 = () => {
+    if (!interimaireForm.permis) {
+      toast({ title: 'Champ requis', description: 'Veuillez indiquer si vous avez le permis', variant: 'destructive' });
+      return false;
+    }
+    if (!interimaireForm.deplacement) {
+      toast({ title: 'Champ requis', description: 'Veuillez indiquer votre disponibilité pour les déplacements', variant: 'destructive' });
+      return false;
+    }
+    if (!interimaireForm.mobilite.trim()) {
+      toast({ title: 'Champ requis', description: 'Veuillez indiquer votre zone de mobilité', variant: 'destructive' });
+      return false;
+    }
+    return true;
+  };
+
   const handleNext = () => {
     if (userType === "interimaire" && currentStep < 3) {
+      if (currentStep === 1 && !validateStep1()) return;
+      if (currentStep === 2 && !validateStep2()) return;
       setCurrentStep(currentStep + 1);
     }
   };
 
   const handleInterimaireSubmit = async () => {
+    // Validate step 3 before submitting
+    if (!validateStep3()) return;
+    
     setIsLoading(true);
     try {
       // 1. Create auth user
