@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { HardHat, Building2, ArrowLeft, ArrowRight, Check, Upload, Mail, Loader2 } from "lucide-react";
+import { HardHat, Building2, ArrowLeft, ArrowRight, Check, Upload, Mail, Loader2, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -39,6 +39,7 @@ const NousRejoindre = () => {
     deplacement: '',
     mobilite: '',
   });
+  const [cvFile, setCvFile] = useState<File | null>(null);
 
   // Recruteur form state
   const [recruteurForm, setRecruteurForm] = useState({
@@ -104,7 +105,27 @@ const NousRejoindre = () => {
         return;
       }
 
-      // 2. Update profile with user_type and additional info
+      // 2. Upload CV if provided
+      let cvUrl: string | null = null;
+      if (authData.user && cvFile) {
+        const fileExt = cvFile.name.split('.').pop();
+        const filePath = `${authData.user.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('cvs')
+          .upload(filePath, cvFile);
+        
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage
+            .from('cvs')
+            .getPublicUrl(filePath);
+          cvUrl = urlData.publicUrl;
+        } else {
+          console.error('CV upload error:', uploadError);
+        }
+      }
+
+      // 3. Update profile with user_type and additional info
       if (authData.user) {
         const { error: profileError } = await supabase
           .from('profiles')
@@ -118,6 +139,7 @@ const NousRejoindre = () => {
             permis: interimaireForm.permis,
             deplacement: interimaireForm.deplacement,
             mobilite: interimaireForm.mobilite,
+            cv_url: cvUrl,
           })
           .eq('user_id', authData.user.id);
 
@@ -550,12 +572,45 @@ const NousRejoindre = () => {
                     </div>
                     <div className="space-y-2">
                       <Label>CV (optionnel)</Label>
-                      <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer">
-                        <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-muted-foreground">
-                          Glissez votre CV ici ou <span className="text-primary">parcourir</span>
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1">PDF, DOC ou DOCX (max. 5 Mo)</p>
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept=".pdf,.doc,.docx"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              if (file.size > 5 * 1024 * 1024) {
+                                toast({
+                                  title: 'Fichier trop volumineux',
+                                  description: 'Le CV ne doit pas dépasser 5 Mo',
+                                  variant: 'destructive',
+                                });
+                                return;
+                              }
+                              setCvFile(file);
+                            }
+                          }}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+                        <div className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${cvFile ? 'border-primary bg-primary/5' : 'border-muted hover:border-primary'}`}>
+                          {cvFile ? (
+                            <>
+                              <CheckCircle className="w-10 h-10 text-primary mx-auto mb-2" />
+                              <p className="text-foreground font-medium">{cvFile.name}</p>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                {(cvFile.size / 1024 / 1024).toFixed(2)} Mo
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <Upload className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+                              <p className="text-muted-foreground">
+                                Glissez votre CV ici ou <span className="text-primary">parcourir</span>
+                              </p>
+                              <p className="text-sm text-muted-foreground mt-1">PDF, DOC ou DOCX (max. 5 Mo)</p>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

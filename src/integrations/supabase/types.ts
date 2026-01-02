@@ -191,6 +191,7 @@ export type Database = {
           company_name: string | null
           competences: string | null
           created_at: string
+          cv_url: string | null
           deplacement: string | null
           description: string | null
           email: string | null
@@ -222,6 +223,7 @@ export type Database = {
           company_name?: string | null
           competences?: string | null
           created_at?: string
+          cv_url?: string | null
           deplacement?: string | null
           description?: string | null
           email?: string | null
@@ -253,6 +255,7 @@ export type Database = {
           company_name?: string | null
           competences?: string | null
           created_at?: string
+          cv_url?: string | null
           deplacement?: string | null
           description?: string | null
           email?: string | null

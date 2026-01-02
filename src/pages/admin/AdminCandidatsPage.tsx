@@ -16,6 +16,7 @@ import {
   CheckCircle,
   Car,
   MapPin,
+  FileText,
 } from "lucide-react";
 import {
   Dialog,
@@ -51,6 +52,7 @@ interface Candidat {
   mobilite: string | null;
   approval_date: string | null;
   created_at: string;
+  cv_url: string | null;
 }
 
 const AdminCandidatsPage = () => {
@@ -308,6 +310,19 @@ const AdminCandidatsPage = () => {
                   )}
                 </div>
               </div>
+
+              {/* CV */}
+              {selectedCandidat.cv_url && (
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <h4 className="font-medium text-foreground mb-3">Documents</h4>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={selectedCandidat.cv_url} target="_blank" rel="noopener noreferrer">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Voir le CV
+                    </a>
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>

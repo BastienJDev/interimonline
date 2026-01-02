@@ -39,6 +39,7 @@ import {
   Briefcase,
   Car,
   MapPin,
+  FileText,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -61,6 +62,7 @@ interface UserProfile {
   permis: string | null;
   deplacement: string | null;
   mobilite: string | null;
+  cv_url: string | null;
 }
 
 const AdminUsersPage = () => {
@@ -438,6 +440,19 @@ const AdminUsersPage = () => {
                   )}
                 </div>
               </div>
+
+              {/* CV */}
+              {selectedUser.cv_url && (
+                <div className="p-4 bg-muted/50 rounded-lg">
+                  <h4 className="font-medium text-foreground mb-3">Documents</h4>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href={selectedUser.cv_url} target="_blank" rel="noopener noreferrer">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Voir le CV
+                    </a>
+                  </Button>
+                </div>
+              )}
 
               {selectedUser.rejection_reason && (
                 <div className="p-3 bg-destructive/10 rounded-lg">
