@@ -41,6 +41,7 @@ const NousRejoindre = () => {
     mobilite: '',
   });
   const [cvFile, setCvFile] = useState<File | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, boolean>>({});
 
   // Recruteur form state
   const [recruteurForm, setRecruteurForm] = useState({
@@ -67,55 +68,79 @@ const NousRejoindre = () => {
   };
 
   const validateStep1 = () => {
+    const errors: Record<string, boolean> = {};
+    let isValid = true;
+
     if (!interimaireForm.prenom.trim()) {
-      toast({ title: 'Champ requis', description: 'Veuillez entrer votre prénom', variant: 'destructive' });
-      return false;
+      errors.prenom = true;
+      isValid = false;
     }
     if (!interimaireForm.nom.trim()) {
-      toast({ title: 'Champ requis', description: 'Veuillez entrer votre nom', variant: 'destructive' });
-      return false;
+      errors.nom = true;
+      isValid = false;
     }
     if (!interimaireForm.email.trim() || !interimaireForm.email.includes('@')) {
-      toast({ title: 'Champ requis', description: 'Veuillez entrer un email valide', variant: 'destructive' });
-      return false;
+      errors.email = true;
+      isValid = false;
     }
     if (!interimaireForm.telephone.trim()) {
-      toast({ title: 'Champ requis', description: 'Veuillez entrer votre téléphone', variant: 'destructive' });
-      return false;
+      errors.telephone = true;
+      isValid = false;
     }
     if (!interimaireForm.password || interimaireForm.password.length < 6) {
-      toast({ title: 'Champ requis', description: 'Le mot de passe doit contenir au moins 6 caractères', variant: 'destructive' });
-      return false;
+      errors.password = true;
+      isValid = false;
     }
-    return true;
+
+    setFieldErrors(errors);
+    if (!isValid) {
+      toast({ title: 'Champs requis', description: 'Veuillez remplir tous les champs obligatoires', variant: 'destructive' });
+    }
+    return isValid;
   };
 
   const validateStep2 = () => {
+    const errors: Record<string, boolean> = {};
+    let isValid = true;
+
     if (!interimaireForm.metier) {
-      toast({ title: 'Champ requis', description: 'Veuillez sélectionner votre métier', variant: 'destructive' });
-      return false;
+      errors.metier = true;
+      isValid = false;
     }
     if (!interimaireForm.experience) {
-      toast({ title: 'Champ requis', description: 'Veuillez sélectionner vos années d\'expérience', variant: 'destructive' });
-      return false;
+      errors.experience = true;
+      isValid = false;
     }
-    return true;
+
+    setFieldErrors(errors);
+    if (!isValid) {
+      toast({ title: 'Champs requis', description: 'Veuillez remplir tous les champs obligatoires', variant: 'destructive' });
+    }
+    return isValid;
   };
 
   const validateStep3 = () => {
+    const errors: Record<string, boolean> = {};
+    let isValid = true;
+
     if (!interimaireForm.permis) {
-      toast({ title: 'Champ requis', description: 'Veuillez indiquer si vous avez le permis', variant: 'destructive' });
-      return false;
+      errors.permis = true;
+      isValid = false;
     }
     if (!interimaireForm.deplacement) {
-      toast({ title: 'Champ requis', description: 'Veuillez indiquer votre disponibilité pour les déplacements', variant: 'destructive' });
-      return false;
+      errors.deplacement = true;
+      isValid = false;
     }
     if (!interimaireForm.mobilite.trim()) {
-      toast({ title: 'Champ requis', description: 'Veuillez indiquer votre zone de mobilité', variant: 'destructive' });
-      return false;
+      errors.mobilite = true;
+      isValid = false;
     }
-    return true;
+
+    setFieldErrors(errors);
+    if (!isValid) {
+      toast({ title: 'Champs requis', description: 'Veuillez remplir tous les champs obligatoires', variant: 'destructive' });
+    }
+    return isValid;
   };
 
   const handleNext = () => {
@@ -479,7 +504,11 @@ const NousRejoindre = () => {
                           id="prenom" 
                           placeholder="Votre prénom"
                           value={interimaireForm.prenom}
-                          onChange={(e) => setInterimaireForm({...interimaireForm, prenom: e.target.value})}
+                          onChange={(e) => {
+                            setInterimaireForm({...interimaireForm, prenom: e.target.value});
+                            setFieldErrors({...fieldErrors, prenom: false});
+                          }}
+                          className={fieldErrors.prenom ? 'border-destructive focus-visible:ring-destructive' : ''}
                         />
                       </div>
                       <div className="space-y-2">
@@ -488,7 +517,11 @@ const NousRejoindre = () => {
                           id="nom" 
                           placeholder="Votre nom"
                           value={interimaireForm.nom}
-                          onChange={(e) => setInterimaireForm({...interimaireForm, nom: e.target.value})}
+                          onChange={(e) => {
+                            setInterimaireForm({...interimaireForm, nom: e.target.value});
+                            setFieldErrors({...fieldErrors, nom: false});
+                          }}
+                          className={fieldErrors.nom ? 'border-destructive focus-visible:ring-destructive' : ''}
                         />
                       </div>
                     </div>
@@ -499,7 +532,11 @@ const NousRejoindre = () => {
                         type="email" 
                         placeholder="votre@email.com"
                         value={interimaireForm.email}
-                        onChange={(e) => setInterimaireForm({...interimaireForm, email: e.target.value})}
+                        onChange={(e) => {
+                          setInterimaireForm({...interimaireForm, email: e.target.value});
+                          setFieldErrors({...fieldErrors, email: false});
+                        }}
+                        className={fieldErrors.email ? 'border-destructive focus-visible:ring-destructive' : ''}
                       />
                     </div>
                     <div className="space-y-2">
@@ -509,7 +546,11 @@ const NousRejoindre = () => {
                         type="tel" 
                         placeholder="06 12 34 56 78"
                         value={interimaireForm.telephone}
-                        onChange={(e) => setInterimaireForm({...interimaireForm, telephone: e.target.value})}
+                        onChange={(e) => {
+                          setInterimaireForm({...interimaireForm, telephone: e.target.value});
+                          setFieldErrors({...fieldErrors, telephone: false});
+                        }}
+                        className={fieldErrors.telephone ? 'border-destructive focus-visible:ring-destructive' : ''}
                       />
                     </div>
                     <div className="space-y-2">
@@ -519,7 +560,11 @@ const NousRejoindre = () => {
                         type="password" 
                         placeholder="••••••••"
                         value={interimaireForm.password}
-                        onChange={(e) => setInterimaireForm({...interimaireForm, password: e.target.value})}
+                        onChange={(e) => {
+                          setInterimaireForm({...interimaireForm, password: e.target.value});
+                          setFieldErrors({...fieldErrors, password: false});
+                        }}
+                        className={fieldErrors.password ? 'border-destructive focus-visible:ring-destructive' : ''}
                       />
                       <p className="text-xs text-muted-foreground">Minimum 6 caractères</p>
                     </div>
@@ -530,20 +575,26 @@ const NousRejoindre = () => {
                 {currentStep === 2 && (
                   <div className="space-y-4 animate-fade-in">
                     <h3 className="text-lg font-semibold">Expérience professionnelle</h3>
-                    <div className="space-y-2">
+                    <div className={`space-y-2 ${fieldErrors.metier ? '[&_button]:border-destructive' : ''}`}>
                       <Label htmlFor="metier">Métier principal *</Label>
                       <MetierCombobox
                         value={interimaireForm.metier}
-                        onValueChange={(value) => setInterimaireForm({...interimaireForm, metier: value})}
+                        onValueChange={(value) => {
+                          setInterimaireForm({...interimaireForm, metier: value});
+                          setFieldErrors({...fieldErrors, metier: false});
+                        }}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="experience">Années d'expérience *</Label>
                       <Select
                         value={interimaireForm.experience}
-                        onValueChange={(value) => setInterimaireForm({...interimaireForm, experience: value})}
+                        onValueChange={(value) => {
+                          setInterimaireForm({...interimaireForm, experience: value});
+                          setFieldErrors({...fieldErrors, experience: false});
+                        }}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className={fieldErrors.experience ? 'border-destructive focus:ring-destructive' : ''}>
                           <SelectValue placeholder="Sélectionnez" />
                         </SelectTrigger>
                         <SelectContent>
@@ -576,9 +627,12 @@ const NousRejoindre = () => {
                       <Label htmlFor="permis">Avez-vous le permis de conduire ? *</Label>
                       <Select
                         value={interimaireForm.permis}
-                        onValueChange={(value) => setInterimaireForm({...interimaireForm, permis: value})}
+                        onValueChange={(value) => {
+                          setInterimaireForm({...interimaireForm, permis: value});
+                          setFieldErrors({...fieldErrors, permis: false});
+                        }}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className={fieldErrors.permis ? 'border-destructive focus:ring-destructive' : ''}>
                           <SelectValue placeholder="Sélectionnez" />
                         </SelectTrigger>
                         <SelectContent>
@@ -592,9 +646,12 @@ const NousRejoindre = () => {
                       <Label htmlFor="deplacement">Êtes-vous d'accord de partir en déplacement ? *</Label>
                       <Select
                         value={interimaireForm.deplacement}
-                        onValueChange={(value) => setInterimaireForm({...interimaireForm, deplacement: value})}
+                        onValueChange={(value) => {
+                          setInterimaireForm({...interimaireForm, deplacement: value});
+                          setFieldErrors({...fieldErrors, deplacement: false});
+                        }}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className={fieldErrors.deplacement ? 'border-destructive focus:ring-destructive' : ''}>
                           <SelectValue placeholder="Sélectionnez" />
                         </SelectTrigger>
                         <SelectContent>
@@ -610,7 +667,11 @@ const NousRejoindre = () => {
                         id="mobilite" 
                         placeholder="Ex: Paris et Île-de-France"
                         value={interimaireForm.mobilite}
-                        onChange={(e) => setInterimaireForm({...interimaireForm, mobilite: e.target.value})}
+                        onChange={(e) => {
+                          setInterimaireForm({...interimaireForm, mobilite: e.target.value});
+                          setFieldErrors({...fieldErrors, mobilite: false});
+                        }}
+                        className={fieldErrors.mobilite ? 'border-destructive focus-visible:ring-destructive' : ''}
                       />
                     </div>
                     <div className="space-y-2">
