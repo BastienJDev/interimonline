@@ -210,27 +210,37 @@ const AdminOffresPage = () => {
     },
   });
 
-  // Place candidat mutation
-  const placeMutation = useMutation({
+  // Propose candidat mutation - creates a proposition in offre_candidatures
+  const proposeMutation = useMutation({
     mutationFn: async ({ offreId, candidatId }: { offreId: string; candidatId: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
       const { error } = await supabase
-        .from("offres")
-        .update({
-          candidat_place_id: candidatId,
-          status: "pourvue",
-        })
-        .eq("id", offreId);
+        .from("offre_candidatures")
+        .insert({
+          offre_id: offreId,
+          candidat_id: candidatId,
+          type: "proposition",
+          admin_status: "valide", // Proposition admin = déjà validée
+          admin_validated_at: new Date().toISOString(),
+          admin_validated_by: user?.id,
+        });
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-offres"] });
+      queryClient.invalidateQueries({ queryKey: ["offre-candidatures"] });
       setIsPlaceDialogOpen(false);
       setSelectedOffre(null);
       setSelectedCandidatId("");
-      toast({ title: "Candidat placé avec succès" });
+      toast({ title: "Candidat proposé à l'entreprise" });
     },
-    onError: () => {
-      toast({ title: "Erreur lors du placement", variant: "destructive" });
+    onError: (error: any) => {
+      if (error?.code === '23505') {
+        toast({ title: "Ce candidat a déjà été proposé pour cette offre", variant: "destructive" });
+      } else {
+        toast({ title: "Erreur lors de la proposition", variant: "destructive" });
+      }
     },
   });
 
@@ -383,7 +393,7 @@ const AdminOffresPage = () => {
                       disabled={offre.status === "pourvue"}
                     >
                       <UserCheck className="w-4 h-4 mr-1" />
-                      Placer
+                      Proposer
                     </Button>
                     <Button variant="ghost" size="icon" onClick={() => handleEdit(offre)}>
                       <Edit2 className="w-4 h-4" />
@@ -600,15 +610,18 @@ const AdminOffresPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Place Candidat Dialog */}
+      {/* Propose Candidat Dialog */}
       <Dialog open={isPlaceDialogOpen} onOpenChange={setIsPlaceDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Placer un candidat sur l'offre</DialogTitle>
+            <DialogTitle>Proposer un candidat à l'entreprise</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <p className="text-sm text-muted-foreground mb-4">
               Offre: <strong>{selectedOffre?.titre}</strong>
+            </p>
+            <p className="text-xs text-muted-foreground mb-4">
+              Le candidat sera proposé à l'entreprise, qui pourra accepter ou refuser.
             </p>
             <div className="grid gap-2">
               <Label>Sélectionner un candidat validé</Label>
@@ -632,16 +645,16 @@ const AdminOffresPage = () => {
               <Button
                 onClick={() => {
                   if (selectedOffre && selectedCandidatId) {
-                    placeMutation.mutate({
+                    proposeMutation.mutate({
                       offreId: selectedOffre.id,
                       candidatId: selectedCandidatId,
                     });
                   }
                 }}
-                disabled={!selectedCandidatId || placeMutation.isPending}
+                disabled={!selectedCandidatId || proposeMutation.isPending}
               >
-                {placeMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Confirmer le placement
+                {proposeMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Proposer le candidat
               </Button>
             </div>
           </div>
