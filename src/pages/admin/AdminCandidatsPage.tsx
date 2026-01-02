@@ -15,7 +15,12 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  Loader2
+  Loader2,
+  Briefcase,
+  Calendar,
+  Euro,
+  Building2,
+  User
 } from "lucide-react";
 import {
   Dialog,
@@ -62,10 +67,23 @@ interface CandidatureDocument {
   file_url: string | null;
 }
 
+interface Mission {
+  id: string;
+  titre: string;
+  lieu: string;
+  type_contrat: string;
+  date_debut: string | null;
+  date_fin: string | null;
+  salaire_min: number | null;
+  salaire_max: number | null;
+  status: string;
+}
+
 const AdminCandidatsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCandidat, setSelectedCandidat] = useState<Candidature | null>(null);
   const [candidatDocuments, setCandidatDocuments] = useState<CandidatureDocument[]>([]);
+  const [candidatMissions, setCandidatMissions] = useState<Mission[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
@@ -183,6 +201,15 @@ const AdminCandidatsPage = () => {
       .eq('candidature_id', candidat.id);
     
     setCandidatDocuments(docs || []);
+
+    // Fetch missions where this candidat was placed
+    const { data: missions } = await supabase
+      .from('offres')
+      .select('id, titre, lieu, type_contrat, date_debut, date_fin, salaire_min, salaire_max, status')
+      .eq('candidat_place_id', candidat.id)
+      .order('date_debut', { ascending: false });
+    
+    setCandidatMissions(missions || []);
   };
 
   const handleValidate = (candidat: Candidature) => {
@@ -349,32 +376,34 @@ const AdminCandidatsPage = () => {
 
       {/* Candidate detail dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Détails du candidat</DialogTitle>
           </DialogHeader>
           {selectedCandidat && (
             <div className="space-y-6">
+              {/* Header with avatar and status */}
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
                   <span className="text-xl font-semibold text-primary">
                     {selectedCandidat.prenom[0]}{selectedCandidat.nom[0]}
                   </span>
                 </div>
-                <div>
+                <div className="flex-1">
                   <h3 className="text-xl font-semibold text-foreground">
                     {selectedCandidat.prenom} {selectedCandidat.nom}
                   </h3>
                   <p className="text-muted-foreground">{selectedCandidat.poste}</p>
-                  {getStatusBadge(selectedCandidat.status)}
+                  <div className="mt-1">{getStatusBadge(selectedCandidat.status)}</div>
                 </div>
               </div>
 
+              {/* Grid with all information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Coordonnées complètes */}
                 <div className="bg-muted/30 rounded-lg p-4 space-y-3">
                   <h4 className="font-semibold text-foreground flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-primary" />
+                    <User className="w-4 h-4 text-primary" />
                     Coordonnées
                   </h4>
                   <div className="space-y-2 text-sm">
@@ -388,19 +417,32 @@ const AdminCandidatsPage = () => {
                         <span>{selectedCandidat.telephone}</span>
                       </div>
                     )}
+                    {selectedCandidat.ville && (
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-muted-foreground" />
+                        <span>{selectedCandidat.ville}</span>
+                      </div>
+                    )}
                     {selectedCandidat.adresse && (
                       <div className="flex items-start gap-2">
-                        <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                        <Building2 className="w-4 h-4 text-muted-foreground mt-0.5" />
                         <span>{selectedCandidat.adresse}</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Informations */}
+                {/* Informations professionnelles */}
                 <div className="bg-muted/30 rounded-lg p-4 space-y-3">
-                  <h4 className="font-semibold text-foreground">Informations</h4>
+                  <h4 className="font-semibold text-foreground flex items-center gap-2">
+                    <Briefcase className="w-4 h-4 text-primary" />
+                    Informations professionnelles
+                  </h4>
                   <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Poste recherché</span>
+                      <span className="font-medium">{selectedCandidat.poste}</span>
+                    </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Expérience</span>
                       <span className="font-medium">{selectedCandidat.experience || '-'}</span>
@@ -410,9 +452,15 @@ const AdminCandidatsPage = () => {
                       <span className="font-medium text-green-600">{selectedCandidat.disponibilite || '-'}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Date postulation</span>
+                      <span className="text-muted-foreground">Date de candidature</span>
                       <span className="font-medium">{formatDate(selectedCandidat.created_at)}</span>
                     </div>
+                    {selectedCandidat.validated_at && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Date de validation</span>
+                        <span className="font-medium">{formatDate(selectedCandidat.validated_at)}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -433,21 +481,94 @@ const AdminCandidatsPage = () => {
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {selectedCandidat.cv_url && (
-                    <Button variant="outline" size="sm">
-                      <FileText className="w-4 h-4 mr-2" />
-                      CV
+                    <Button variant="outline" size="sm" asChild>
+                      <a href={selectedCandidat.cv_url} target="_blank" rel="noopener noreferrer">
+                        <FileText className="w-4 h-4 mr-2" />
+                        CV
+                      </a>
                     </Button>
                   )}
                   {candidatDocuments.map((doc) => (
-                    <Button key={doc.id} variant="outline" size="sm">
-                      <FileText className="w-4 h-4 mr-2" />
-                      {doc.name}
+                    <Button key={doc.id} variant="outline" size="sm" asChild>
+                      <a href={doc.file_url || '#'} target="_blank" rel="noopener noreferrer">
+                        <FileText className="w-4 h-4 mr-2" />
+                        {doc.name}
+                      </a>
                     </Button>
                   ))}
                   {!selectedCandidat.cv_url && candidatDocuments.length === 0 && (
                     <p className="text-sm text-muted-foreground">Aucun document</p>
                   )}
                 </div>
+              </div>
+
+              {/* Anciennes missions */}
+              <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+                <h4 className="font-semibold text-foreground flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-primary" />
+                  Missions réalisées
+                </h4>
+                {candidatMissions.length > 0 ? (
+                  <div className="space-y-3">
+                    {candidatMissions.map((mission) => (
+                      <div 
+                        key={mission.id} 
+                        className="bg-background rounded-lg p-3 border border-border"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="font-medium text-foreground">{mission.titre}</p>
+                            <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
+                              <MapPin className="w-3 h-3" />
+                              <span>{mission.lieu}</span>
+                            </div>
+                          </div>
+                          <Badge variant="outline" className={
+                            mission.status === 'pourvue' 
+                              ? 'border-green-500 text-green-600' 
+                              : mission.status === 'terminee'
+                              ? 'border-gray-500 text-gray-600'
+                              : 'border-blue-500 text-blue-600'
+                          }>
+                            {mission.status === 'pourvue' ? 'Pourvue' : 
+                             mission.status === 'terminee' ? 'Terminée' : 
+                             mission.status}
+                          </Badge>
+                        </div>
+                        <div className="flex flex-wrap gap-4 mt-2 text-sm">
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Briefcase className="w-3 h-3" />
+                            <span>{mission.type_contrat.toUpperCase()}</span>
+                          </div>
+                          {mission.date_debut && (
+                            <div className="flex items-center gap-1 text-muted-foreground">
+                              <Calendar className="w-3 h-3" />
+                              <span>
+                                {formatDate(mission.date_debut)}
+                                {mission.date_fin && ` - ${formatDate(mission.date_fin)}`}
+                              </span>
+                            </div>
+                          )}
+                          {(mission.salaire_min || mission.salaire_max) && (
+                            <div className="flex items-center gap-1 text-muted-foreground">
+                              <Euro className="w-3 h-3" />
+                              <span>
+                                {mission.salaire_min && mission.salaire_max 
+                                  ? `${mission.salaire_min}€ - ${mission.salaire_max}€/h`
+                                  : mission.salaire_min 
+                                  ? `${mission.salaire_min}€/h`
+                                  : `${mission.salaire_max}€/h`
+                                }
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Aucune mission réalisée</p>
+                )}
               </div>
 
               {/* Actions */}
