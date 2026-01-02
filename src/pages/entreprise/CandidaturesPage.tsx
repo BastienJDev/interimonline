@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import OffresLayout from "./OffresLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Search, 
   Eye, 
@@ -10,17 +13,30 @@ import {
   Clock,
   Filter,
   FileText,
-  Phone,
-  Mail,
   MapPin,
-  Calendar
+  Briefcase,
+  Loader2,
+  User,
+  Star,
+  UserCheck,
 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Select,
   SelectContent,
@@ -28,111 +44,202 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+import { toast } from "@/hooks/use-toast";
 
-const mockCandidatures = [
-  { 
-    id: 1, 
-    nom: "Jean Dupont", 
-    poste: "Maçon qualifié", 
-    date: "15/01/2025", 
-    status: "nouveau",
-    email: "jean.dupont@email.com",
-    telephone: "06 12 34 56 78",
-    ville: "Paris 75",
-    experience: "5 ans",
-    disponibilite: "Immédiate"
-  },
-  { 
-    id: 2, 
-    nom: "Pierre Martin", 
-    poste: "Électricien industriel", 
-    date: "14/01/2025", 
-    status: "en_cours",
-    email: "pierre.martin@email.com",
-    telephone: "06 23 45 67 89",
-    ville: "Lyon 69",
-    experience: "3 ans",
-    disponibilite: "2 semaines"
-  },
-  { 
-    id: 3, 
-    nom: "Marc Leroy", 
-    poste: "Maçon qualifié", 
-    date: "13/01/2025", 
-    status: "accepte",
-    email: "marc.leroy@email.com",
-    telephone: "06 34 56 78 90",
-    ville: "Marseille 13",
-    experience: "7 ans",
-    disponibilite: "Immédiate"
-  },
-  { 
-    id: 4, 
-    nom: "Lucas Bernard", 
-    poste: "Chef d'équipe BTP", 
-    date: "12/01/2025", 
-    status: "rejete",
-    email: "lucas.bernard@email.com",
-    telephone: "06 45 67 89 01",
-    ville: "Bordeaux 33",
-    experience: "10 ans",
-    disponibilite: "1 mois"
-  },
-  { 
-    id: 5, 
-    nom: "Antoine Moreau", 
-    poste: "Électricien industriel", 
-    date: "11/01/2025", 
-    status: "nouveau",
-    email: "antoine.moreau@email.com",
-    telephone: "06 56 78 90 12",
-    ville: "Toulouse 31",
-    experience: "4 ans",
-    disponibilite: "Immédiate"
-  },
-];
+interface Proposition {
+  id: string;
+  type: string;
+  admin_status: string;
+  entreprise_status: string;
+  created_at: string;
+  offre_id: string;
+  candidat_id: string;
+  offre: {
+    id: string;
+    titre: string;
+    lieu: string;
+    date_debut: string | null;
+  };
+  candidat: {
+    id: string;
+    prenom: string;
+    nom: string;
+    poste: string;
+    experience: string | null;
+    ville: string | null;
+    cv_url: string | null;
+  };
+}
 
 const CandidaturesPage = () => {
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
-  const [selectedCandidat, setSelectedCandidat] = useState<typeof mockCandidatures[0] | null>(null);
+  const [selectedProposition, setSelectedProposition] = useState<Proposition | null>(null);
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+
+  // Fetch propositions for this enterprise
+  const { data: propositions, isLoading } = useQuery({
+    queryKey: ['entreprise-propositions'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Non authentifié");
+
+      const { data, error } = await supabase
+        .from('offre_candidatures')
+        .select(`
+          *,
+          offre:offres!inner(id, titre, lieu, date_debut, created_by),
+          candidat:candidatures(id, prenom, nom, poste, experience, ville, cv_url)
+        `)
+        .eq('admin_status', 'valide')
+        .eq('offre.created_by', user.id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as unknown as Proposition[];
+    },
+  });
+
+  // Accept proposition mutation
+  const acceptMutation = useMutation({
+    mutationFn: async (proposition: Proposition) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Get enterprise profile for name
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('company_name')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+
+      // Update proposition status
+      const { error: propError } = await supabase
+        .from('offre_candidatures')
+        .update({
+          entreprise_status: 'accepte',
+          entreprise_response_at: new Date().toISOString(),
+        })
+        .eq('id', proposition.id);
+      
+      if (propError) throw propError;
+
+      // Update offre status to "pourvue" and set candidat_place_id
+      const { error: offreError } = await supabase
+        .from('offres')
+        .update({
+          status: 'pourvue',
+          candidat_place_id: proposition.candidat_id,
+        })
+        .eq('id', proposition.offre_id);
+      
+      if (offreError) throw offreError;
+
+      // Create mission history entry
+      const { error: historyError } = await supabase
+        .from('mission_history')
+        .insert({
+          candidat_id: proposition.candidat_id,
+          offre_id: proposition.offre_id,
+          titre: proposition.offre.titre,
+          entreprise_name: profile?.company_name || 'Entreprise',
+          lieu: proposition.offre.lieu,
+          date_debut: proposition.offre.date_debut,
+          status: 'en_cours',
+        });
+      
+      if (historyError) throw historyError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['entreprise-propositions'] });
+      queryClient.invalidateQueries({ queryKey: ['entreprise-offres'] });
+      setSelectedProposition(null);
+      toast({ title: "Candidat accepté ! La mission commence." });
+    },
+    onError: () => {
+      toast({ title: "Erreur lors de l'acceptation", variant: "destructive" });
+    },
+  });
+
+  // Reject proposition mutation
+  const rejectMutation = useMutation({
+    mutationFn: async ({ proposition, reason }: { proposition: Proposition; reason: string }) => {
+      const { error } = await supabase
+        .from('offre_candidatures')
+        .update({
+          entreprise_status: 'refuse',
+          entreprise_response_at: new Date().toISOString(),
+          entreprise_rejection_reason: reason || null,
+        })
+        .eq('id', proposition.id);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['entreprise-propositions'] });
+      setIsRejectDialogOpen(false);
+      setSelectedProposition(null);
+      setRejectReason("");
+      toast({ title: "Candidat refusé" });
+    },
+    onError: () => {
+      toast({ title: "Erreur lors du refus", variant: "destructive" });
+    },
+  });
+
+  const formatCandidatName = (prenom: string, nom: string) => {
+    return `${prenom} ${nom ? nom[0] + '.' : ''}`.trim();
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "nouveau":
-        return <span className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full"><Clock className="w-3 h-3" /> Nouveau</span>;
-      case "en_cours":
-        return <span className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-primary/10 text-primary rounded-full"><Clock className="w-3 h-3" /> En cours</span>;
+      case "en_attente":
+        return <Badge className="bg-blue-100 text-blue-700"><Clock className="w-3 h-3 mr-1" /> En attente</Badge>;
       case "accepte":
-        return <span className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full"><CheckCircle className="w-3 h-3" /> Accepté</span>;
-      case "rejete":
-        return <span className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium bg-red-100 text-red-700 rounded-full"><XCircle className="w-3 h-3" /> Rejeté</span>;
+        return <Badge className="bg-green-100 text-green-700"><CheckCircle className="w-3 h-3 mr-1" /> Accepté</Badge>;
+      case "refuse":
+        return <Badge className="bg-red-100 text-red-700"><XCircle className="w-3 h-3 mr-1" /> Refusé</Badge>;
       default:
-        return null;
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
-  const filteredCandidatures = mockCandidatures.filter((c) => {
-    const matchesSearch = c.nom.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.poste.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = filterStatus === "all" || c.status === filterStatus;
+  const filteredPropositions = propositions?.filter((p) => {
+    const candidatName = `${p.candidat?.prenom || ''} ${p.candidat?.nom || ''}`.toLowerCase();
+    const matchesSearch = candidatName.includes(searchQuery.toLowerCase()) ||
+      p.offre?.titre.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = filterStatus === "all" || p.entreprise_status === filterStatus;
     return matchesSearch && matchesStatus;
-  });
+  }) || [];
 
   const stats = {
-    total: mockCandidatures.length,
-    nouveau: mockCandidatures.filter(c => c.status === "nouveau").length,
-    en_cours: mockCandidatures.filter(c => c.status === "en_cours").length,
-    accepte: mockCandidatures.filter(c => c.status === "accepte").length,
+    total: propositions?.length || 0,
+    en_attente: propositions?.filter(p => p.entreprise_status === "en_attente").length || 0,
+    accepte: propositions?.filter(p => p.entreprise_status === "accepte").length || 0,
+    refuse: propositions?.filter(p => p.entreprise_status === "refuse").length || 0,
   };
+
+  if (isLoading) {
+    return (
+      <OffresLayout title="Candidatures">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </OffresLayout>
+    );
+  }
 
   return (
     <OffresLayout title="Candidatures">
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Candidatures reçues</h1>
-        <p className="text-muted-foreground">Consultez et gérez les candidatures pour vos offres</p>
+        <h1 className="text-2xl font-bold text-foreground">Candidats proposés</h1>
+        <p className="text-muted-foreground">Consultez et validez les candidats proposés pour vos offres</p>
       </div>
 
       {/* Stats */}
@@ -142,16 +249,16 @@ const CandidaturesPage = () => {
           <p className="text-2xl font-bold text-foreground">{stats.total}</p>
         </div>
         <div className="bg-card rounded-xl p-4 shadow-card">
-          <p className="text-sm text-muted-foreground">Nouvelles</p>
-          <p className="text-2xl font-bold text-blue-600">{stats.nouveau}</p>
+          <p className="text-sm text-muted-foreground">En attente</p>
+          <p className="text-2xl font-bold text-blue-600">{stats.en_attente}</p>
         </div>
         <div className="bg-card rounded-xl p-4 shadow-card">
-          <p className="text-sm text-muted-foreground">En cours</p>
-          <p className="text-2xl font-bold text-primary">{stats.en_cours}</p>
-        </div>
-        <div className="bg-card rounded-xl p-4 shadow-card">
-          <p className="text-sm text-muted-foreground">Acceptées</p>
+          <p className="text-sm text-muted-foreground">Acceptés</p>
           <p className="text-2xl font-bold text-green-600">{stats.accepte}</p>
+        </div>
+        <div className="bg-card rounded-xl p-4 shadow-card">
+          <p className="text-sm text-muted-foreground">Refusés</p>
+          <p className="text-2xl font-bold text-red-600">{stats.refuse}</p>
         </div>
       </div>
 
@@ -160,7 +267,7 @@ const CandidaturesPage = () => {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Rechercher un candidat..."
+            placeholder="Rechercher un candidat ou une offre..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -173,128 +280,138 @@ const CandidaturesPage = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tous les statuts</SelectItem>
-            <SelectItem value="nouveau">Nouveau</SelectItem>
-            <SelectItem value="en_cours">En cours</SelectItem>
+            <SelectItem value="en_attente">En attente</SelectItem>
             <SelectItem value="accepte">Accepté</SelectItem>
-            <SelectItem value="rejete">Rejeté</SelectItem>
+            <SelectItem value="refuse">Refusé</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
-      {/* Candidatures List */}
-      <div className="bg-card rounded-xl shadow-card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-muted/50">
-              <tr>
-                <th className="text-left text-xs font-medium text-muted-foreground uppercase px-6 py-4">Candidat</th>
-                <th className="text-left text-xs font-medium text-muted-foreground uppercase px-6 py-4">Poste</th>
-                <th className="text-left text-xs font-medium text-muted-foreground uppercase px-6 py-4">Date</th>
-                <th className="text-left text-xs font-medium text-muted-foreground uppercase px-6 py-4">Statut</th>
-                <th className="text-right text-xs font-medium text-muted-foreground uppercase px-6 py-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredCandidatures.map((candidature) => (
-                <tr key={candidature.id} className="hover:bg-muted/30 transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-semibold text-primary">
-                          {candidature.nom.split(' ').map(n => n[0]).join('')}
+      {/* Propositions List */}
+      {filteredPropositions.length > 0 ? (
+        <div className="grid gap-4">
+          {filteredPropositions.map((proposition) => (
+            <div key={proposition.id} className="bg-card rounded-xl p-6 shadow-card hover:shadow-hover transition-shadow">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <User className="w-7 h-7 text-primary" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h3 className="font-semibold text-lg text-foreground">
+                        {proposition.candidat ? formatCandidatName(proposition.candidat.prenom, proposition.candidat.nom) : 'Candidat'}
+                      </h3>
+                      {getStatusBadge(proposition.entreprise_status)}
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {proposition.candidat?.poste}
+                      {proposition.candidat?.experience && ` • ${proposition.candidat.experience} d'expérience`}
+                    </p>
+                    <div className="flex items-center gap-4 mt-2">
+                      <span className="flex items-center gap-1.5 text-sm text-primary font-medium">
+                        <Briefcase className="w-4 h-4" /> 
+                        Pour: {proposition.offre?.titre}
+                      </span>
+                      {proposition.candidat?.ville && (
+                        <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                          <MapPin className="w-4 h-4" /> {proposition.candidat.ville}
                         </span>
-                      </div>
-                      <div>
-                        <p className="font-medium text-foreground">{candidature.nom.split(' ').map((n, i, arr) => i === arr.length - 1 ? n[0] + '.' : n).join(' ')}</p>
-                        <p className="text-xs text-muted-foreground">{candidature.ville}</p>
-                      </div>
+                      )}
                     </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-foreground">{candidature.poste}</td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{candidature.date}</td>
-                  <td className="px-6 py-4">{getStatusBadge(candidature.status)}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-end gap-2">
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Proposé le {format(new Date(proposition.created_at), 'dd MMMM yyyy', { locale: fr })}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  {proposition.candidat?.cv_url && (
+                    <Button variant="outline" size="sm" asChild>
+                      <a href={proposition.candidat.cv_url} target="_blank" rel="noopener noreferrer">
+                        <FileText className="w-4 h-4 mr-2" />
+                        CV
+                      </a>
+                    </Button>
+                  )}
+                  
+                  {proposition.entreprise_status === 'en_attente' && (
+                    <>
                       <Button 
-                        variant="outline" 
+                        variant="default"
                         size="sm"
-                        onClick={() => setSelectedCandidat(candidature)}
+                        onClick={() => acceptMutation.mutate(proposition)}
+                        disabled={acceptMutation.isPending}
                       >
-                        <Eye className="w-4 h-4 mr-2" />
-                        Voir profil
+                        {acceptMutation.isPending ? (
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                        )}
+                        Accepter
                       </Button>
-                      {candidature.status === "nouveau" || candidature.status === "en_cours" ? (
-                        <>
-                          <Button variant="ghost" size="icon" className="h-9 w-9 text-green-600 hover:text-green-700 hover:bg-green-50">
-                            <CheckCircle className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-9 w-9 text-red-600 hover:text-red-700 hover:bg-red-50">
-                            <XCircle className="w-4 h-4" />
-                          </Button>
-                        </>
-                      ) : null}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {filteredCandidatures.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">Aucune candidature trouvée</p>
-        </div>
-      )}
-
-      {/* Candidat Detail Dialog */}
-      <Dialog open={!!selectedCandidat} onOpenChange={() => setSelectedCandidat(null)}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Profil du candidat</DialogTitle>
-          </DialogHeader>
-          {selectedCandidat && (
-            <div className="space-y-6 py-4">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                  <span className="text-xl font-bold text-primary">
-                    {selectedCandidat.nom.split(' ').map(n => n[0]).join('')}
-                  </span>
+                      <Button 
+                        variant="outline"
+                        size="sm"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => {
+                          setSelectedProposition(proposition);
+                          setIsRejectDialogOpen(true);
+                        }}
+                      >
+                        <XCircle className="w-4 h-4 mr-2" />
+                        Refuser
+                      </Button>
+                    </>
+                  )}
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">{selectedCandidat.nom.split(' ').map((n, i, arr) => i === arr.length - 1 ? n[0] + '.' : n).join(' ')}</h3>
-                  <p className="text-muted-foreground">{selectedCandidat.poste}</p>
-                </div>
-              </div>
-
-              <div className="p-4 bg-muted/50 rounded-lg text-center">
-                <p className="text-sm text-muted-foreground">
-                  Les coordonnées du candidat seront disponibles après validation par notre équipe.
-                </p>
-              </div>
-
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <p className="text-sm font-medium text-foreground mb-1">Expérience</p>
-                <p className="text-sm text-muted-foreground">{selectedCandidat.experience} d'expérience dans le domaine</p>
-              </div>
-
-              <div className="p-4 bg-muted/50 rounded-lg">
-                <p className="text-sm font-medium text-foreground mb-1">Expérience</p>
-                <p className="text-sm text-muted-foreground">{selectedCandidat.experience} d'expérience dans le domaine</p>
-              </div>
-
-              <div className="flex gap-3">
-                <Button variant="outline" className="flex-1">
-                  <FileText className="w-4 h-4 mr-2" />
-                  Voir CV
-                </Button>
               </div>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          ))}
+        </div>
+      ) : (
+        <div className="bg-card rounded-xl p-12 shadow-card text-center">
+          <UserCheck className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
+          <p className="text-muted-foreground">Aucun candidat proposé pour le moment</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Les candidats validés par notre équipe apparaîtront ici
+          </p>
+        </div>
+      )}
     </div>
+
+    {/* Reject Dialog */}
+    <AlertDialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Refuser ce candidat ?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Vous pouvez indiquer une raison pour le refus (optionnel).
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <Textarea
+          value={rejectReason}
+          onChange={(e) => setRejectReason(e.target.value)}
+          placeholder="Raison du refus (optionnel)..."
+          rows={3}
+        />
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => setRejectReason("")}>Annuler</AlertDialogCancel>
+          <AlertDialogAction
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            onClick={() => {
+              if (selectedProposition) {
+                rejectMutation.mutate({ proposition: selectedProposition, reason: rejectReason });
+              }
+            }}
+            disabled={rejectMutation.isPending}
+          >
+            {rejectMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            Confirmer le refus
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     </OffresLayout>
   );
 };

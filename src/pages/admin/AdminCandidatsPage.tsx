@@ -92,11 +92,11 @@ const AdminCandidatsPage = () => {
   const [selectedCandidat, setSelectedCandidat] = useState<Candidat | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  // Fetch validated interimaires from profiles
+  // Fetch validated interimaires from profiles with their ratings
   const { data: candidats, isLoading } = useQuery({
     queryKey: ['admin-candidats-valides'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_type', 'interimaire')
@@ -104,7 +104,33 @@ const AdminCandidatsPage = () => {
         .order('approval_date', { ascending: false });
       
       if (error) throw error;
-      return data as Candidat[];
+
+      // Fetch all ratings for these candidats
+      const candidatIds = profiles.map(p => p.id);
+      const { data: allMissions } = await supabase
+        .from('mission_history')
+        .select('candidat_id, rating')
+        .in('candidat_id', candidatIds)
+        .not('rating', 'is', null);
+
+      // Calculate average ratings
+      const ratingsMap: Record<string, { total: number; count: number }> = {};
+      allMissions?.forEach(m => {
+        if (!ratingsMap[m.candidat_id]) {
+          ratingsMap[m.candidat_id] = { total: 0, count: 0 };
+        }
+        ratingsMap[m.candidat_id].total += m.rating!;
+        ratingsMap[m.candidat_id].count += 1;
+      });
+
+      // Attach average rating to each candidat
+      const candidatsWithRating = profiles.map(p => ({
+        ...p,
+        averageRating: ratingsMap[p.id] ? ratingsMap[p.id].total / ratingsMap[p.id].count : null,
+        ratingCount: ratingsMap[p.id]?.count || 0,
+      }));
+      
+      return candidatsWithRating as (Candidat & { averageRating: number | null; ratingCount: number })[];
     },
   });
 
@@ -293,7 +319,7 @@ const AdminCandidatsPage = () => {
                 <TableRow>
                   <TableHead>Candidat</TableHead>
                   <TableHead>Métier</TableHead>
-                  <TableHead>Téléphone</TableHead>
+                  <TableHead>Note</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead>Date de validation</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
@@ -318,7 +344,27 @@ const AdminCandidatsPage = () => {
                       </div>
                     </TableCell>
                     <TableCell>{getMetierLabel(candidat.metier)}</TableCell>
-                    <TableCell>{candidat.phone || '-'}</TableCell>
+                    <TableCell>
+                      {candidat.averageRating !== null ? (
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star 
+                              key={star} 
+                              className={`w-3.5 h-3.5 ${
+                                star <= Math.round(candidat.averageRating!) 
+                                  ? 'text-yellow-400 fill-yellow-400' 
+                                  : 'text-gray-300'
+                              }`} 
+                            />
+                          ))}
+                          <span className="text-xs text-muted-foreground ml-1">
+                            ({candidat.ratingCount})
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       {candidat.mission_status === 'en_mission' ? (
                         <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">
