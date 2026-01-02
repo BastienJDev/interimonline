@@ -481,16 +481,67 @@ const NousRejoindre = () => {
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionnez votre métier" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-h-[300px]">
+                          {/* Gros œuvre */}
                           <SelectItem value="macon">Maçon</SelectItem>
+                          <SelectItem value="coffreur">Coffreur / Bancheur</SelectItem>
+                          <SelectItem value="ferrailleur">Ferrailleur</SelectItem>
+                          <SelectItem value="grutier">Grutier</SelectItem>
+                          <SelectItem value="conducteur-engins">Conducteur d'engins</SelectItem>
+                          <SelectItem value="chef-equipe-gros-oeuvre">Chef d'équipe gros œuvre</SelectItem>
+                          
+                          {/* Second œuvre */}
                           <SelectItem value="electricien">Électricien</SelectItem>
                           <SelectItem value="plombier">Plombier</SelectItem>
+                          <SelectItem value="chauffagiste">Chauffagiste</SelectItem>
+                          <SelectItem value="climaticien">Climaticien / Frigoriste</SelectItem>
+                          <SelectItem value="plaquiste">Plaquiste</SelectItem>
                           <SelectItem value="carreleur">Carreleur</SelectItem>
-                          <SelectItem value="peintre">Peintre</SelectItem>
-                          <SelectItem value="charpentier">Charpentier</SelectItem>
-                          <SelectItem value="conducteur">Conducteur d'engins</SelectItem>
-                          <SelectItem value="manoeuvre">Manœuvre</SelectItem>
-                          <SelectItem value="autre">Autre</SelectItem>
+                          <SelectItem value="peintre">Peintre en bâtiment</SelectItem>
+                          <SelectItem value="menuisier">Menuisier</SelectItem>
+                          <SelectItem value="serrurier-metallier">Serrurier / Métallier</SelectItem>
+                          <SelectItem value="couvreur">Couvreur</SelectItem>
+                          <SelectItem value="zingueur">Zingueur</SelectItem>
+                          <SelectItem value="etancheur">Étancheur</SelectItem>
+                          <SelectItem value="facades">Façadier / Ravalement</SelectItem>
+                          <SelectItem value="solier-moquettiste">Solier / Moquettiste</SelectItem>
+                          
+                          {/* Charpente / Structure */}
+                          <SelectItem value="charpentier">Charpentier bois</SelectItem>
+                          <SelectItem value="charpentier-metallique">Charpentier métallique</SelectItem>
+                          <SelectItem value="monteur-echafaudage">Monteur échafaudeur</SelectItem>
+                          
+                          {/* TP / VRD */}
+                          <SelectItem value="canalisateur">Canalisateur</SelectItem>
+                          <SelectItem value="terrassier">Terrassier</SelectItem>
+                          <SelectItem value="conducteur-pelle">Conducteur de pelle</SelectItem>
+                          <SelectItem value="conducteur-chargeuse">Conducteur de chargeuse</SelectItem>
+                          <SelectItem value="conducteur-compacteur">Conducteur de compacteur</SelectItem>
+                          <SelectItem value="regleur-finisseur">Régleur / Finisseur</SelectItem>
+                          <SelectItem value="poseur-bordures">Poseur de bordures</SelectItem>
+                          
+                          {/* Industrie */}
+                          <SelectItem value="soudeur">Soudeur</SelectItem>
+                          <SelectItem value="tuyauteur">Tuyauteur industriel</SelectItem>
+                          <SelectItem value="chaudronnier">Chaudronnier</SelectItem>
+                          <SelectItem value="mecanicien-industriel">Mécanicien industriel</SelectItem>
+                          <SelectItem value="electricien-industriel">Électricien industriel</SelectItem>
+                          <SelectItem value="technicien-maintenance">Technicien de maintenance</SelectItem>
+                          <SelectItem value="operateur-usinage">Opérateur d'usinage</SelectItem>
+                          <SelectItem value="tourneur-fraiseur">Tourneur / Fraiseur</SelectItem>
+                          <SelectItem value="regleur-machines">Régleur de machines</SelectItem>
+                          <SelectItem value="cariste">Cariste</SelectItem>
+                          <SelectItem value="magasinier">Magasinier</SelectItem>
+                          <SelectItem value="agent-production">Agent de production</SelectItem>
+                          
+                          {/* Encadrement */}
+                          <SelectItem value="chef-chantier">Chef de chantier</SelectItem>
+                          <SelectItem value="conducteur-travaux">Conducteur de travaux</SelectItem>
+                          <SelectItem value="geometre">Géomètre / Topographe</SelectItem>
+                          
+                          {/* Autres */}
+                          <SelectItem value="manoeuvre">Manœuvre / Aide</SelectItem>
+                          <SelectItem value="autre">Autre métier</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
