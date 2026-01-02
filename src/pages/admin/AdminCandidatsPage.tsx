@@ -53,6 +53,7 @@ interface Candidat {
   approval_date: string | null;
   created_at: string;
   cv_url: string | null;
+  mission_status: string | null;
 }
 
 const AdminCandidatsPage = () => {
@@ -143,6 +144,7 @@ const AdminCandidatsPage = () => {
                   <TableHead>Candidat</TableHead>
                   <TableHead>Métier</TableHead>
                   <TableHead>Téléphone</TableHead>
+                  <TableHead>Statut</TableHead>
                   <TableHead>Date de validation</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -167,6 +169,19 @@ const AdminCandidatsPage = () => {
                     </TableCell>
                     <TableCell>{candidat.metier || '-'}</TableCell>
                     <TableCell>{candidat.phone || '-'}</TableCell>
+                    <TableCell>
+                      {candidat.mission_status === 'en_mission' ? (
+                        <Badge className="bg-blue-500/10 text-blue-600 border-blue-500/20">
+                          <Briefcase className="w-3 h-3 mr-1" />
+                          En mission
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Disponible
+                        </Badge>
+                      )}
+                    </TableCell>
                     <TableCell>{formatDate(candidat.approval_date)}</TableCell>
                     <TableCell className="text-right">
                       <Button 
