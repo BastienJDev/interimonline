@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import OffresLayout from "./OffresLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,6 @@ import {
   CalendarClock,
   Loader2,
   User,
-  Star,
 } from "lucide-react";
 import {
   Dialog,
@@ -40,26 +39,98 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { toast } from "@/hooks/use-toast";
 
 const OffresPage = () => {
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    titre: "",
+    lieu: "",
+    type_contrat: "mission",
+    salaire_min: "",
+    salaire_max: "",
+    experience_requise: "",
+    date_debut: "",
+    date_fin: "",
+    horaires: "",
+    description: "",
+    avantages: "",
+  });
+
+  const resetForm = () => {
+    setFormData({
+      titre: "",
+      lieu: "",
+      type_contrat: "mission",
+      salaire_min: "",
+      salaire_max: "",
+      experience_requise: "",
+      date_debut: "",
+      date_fin: "",
+      horaires: "",
+      description: "",
+      avantages: "",
+    });
+  };
 
   // Fetch offres from Supabase
   const { data: offres, isLoading } = useQuery({
     queryKey: ['entreprise-offres'],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Non authentifié");
+
       const { data, error } = await supabase
         .from('offres')
         .select(`
           *,
           candidat_place:candidatures(id, prenom, nom, poste)
         `)
+        .eq('created_by', user.id)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       return data;
+    },
+  });
+
+  // Create offre mutation
+  const createMutation = useMutation({
+    mutationFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Non authentifié");
+
+      const { error } = await supabase.from('offres').insert({
+        titre: formData.titre,
+        lieu: formData.lieu,
+        type_contrat: formData.type_contrat,
+        salaire_min: formData.salaire_min ? parseFloat(formData.salaire_min) : null,
+        salaire_max: formData.salaire_max ? parseFloat(formData.salaire_max) : null,
+        experience_requise: formData.experience_requise || null,
+        date_debut: formData.date_debut || null,
+        date_fin: formData.date_fin || null,
+        horaires: formData.horaires || null,
+        description: formData.description || null,
+        avantages: formData.avantages || null,
+        created_by: user.id,
+        status: 'active',
+      });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['entreprise-offres'] });
+      setIsCreateDialogOpen(false);
+      resetForm();
+      toast({ title: "Offre créée avec succès" });
+    },
+    onError: () => {
+      toast({ title: "Erreur lors de la création", variant: "destructive" });
     },
   });
 
@@ -109,30 +180,46 @@ const OffresPage = () => {
           <h1 className="text-2xl font-bold text-foreground">Mes offres d'emploi</h1>
           <p className="text-muted-foreground">Gérez vos offres et suivez les candidatures</p>
         </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <Dialog open={isCreateDialogOpen} onOpenChange={(open) => {
+          setIsCreateDialogOpen(open);
+          if (!open) resetForm();
+        }}>
           <DialogTrigger asChild>
             <Button variant="cta" size="lg">
               <Plus className="w-4 h-4 mr-2" />
               Nouvelle offre
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Créer une nouvelle offre</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="titre">Titre du poste</Label>
-                <Input id="titre" placeholder="Ex: Maçon qualifié" />
+                <Label htmlFor="titre">Titre du poste *</Label>
+                <Input 
+                  id="titre" 
+                  placeholder="Ex: Maçon qualifié"
+                  value={formData.titre}
+                  onChange={(e) => setFormData({ ...formData, titre: e.target.value })}
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="lieu">Lieu</Label>
-                  <Input id="lieu" placeholder="Ex: Paris 75" />
+                  <Label htmlFor="lieu">Lieu *</Label>
+                  <Input 
+                    id="lieu" 
+                    placeholder="Ex: Paris 75"
+                    value={formData.lieu}
+                    onChange={(e) => setFormData({ ...formData, lieu: e.target.value })}
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="type">Type de contrat</Label>
-                  <Select>
+                  <Select 
+                    value={formData.type_contrat}
+                    onValueChange={(value) => setFormData({ ...formData, type_contrat: value })}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner" />
                     </SelectTrigger>
@@ -146,50 +233,107 @@ const OffresPage = () => {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="salaire">Salaire (€/h)</Label>
-                  <Input id="salaire" placeholder="Ex: 14-16" />
+                  <Label htmlFor="salaire_min">Salaire min (€/h)</Label>
+                  <Input 
+                    id="salaire_min" 
+                    type="number"
+                    placeholder="14"
+                    value={formData.salaire_min}
+                    onChange={(e) => setFormData({ ...formData, salaire_min: e.target.value })}
+                  />
                 </div>
                 <div className="grid gap-2">
+                  <Label htmlFor="salaire_max">Salaire max (€/h)</Label>
+                  <Input 
+                    id="salaire_max" 
+                    type="number"
+                    placeholder="18"
+                    value={formData.salaire_max}
+                    onChange={(e) => setFormData({ ...formData, salaire_max: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
                   <Label htmlFor="experience">Expérience requise</Label>
-                  <Select>
+                  <Select
+                    value={formData.experience_requise}
+                    onValueChange={(value) => setFormData({ ...formData, experience_requise: value })}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Sélectionner" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="debutant">Débutant</SelectItem>
-                      <SelectItem value="1-2">1-2 ans</SelectItem>
-                      <SelectItem value="2-3">2-3 ans</SelectItem>
-                      <SelectItem value="3-5">3-5 ans</SelectItem>
-                      <SelectItem value="5+">5+ ans</SelectItem>
+                      <SelectItem value="1-2 ans">1-2 ans</SelectItem>
+                      <SelectItem value="2-3 ans">2-3 ans</SelectItem>
+                      <SelectItem value="3-5 ans">3-5 ans</SelectItem>
+                      <SelectItem value="5+ ans">5+ ans</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="horaires">Horaires</Label>
+                  <Input 
+                    id="horaires" 
+                    placeholder="7h-16h"
+                    value={formData.horaires}
+                    onChange={(e) => setFormData({ ...formData, horaires: e.target.value })}
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="dateDebut">Date de début</Label>
-                  <Input id="dateDebut" type="date" />
+                  <Input 
+                    id="dateDebut" 
+                    type="date"
+                    value={formData.date_debut}
+                    onChange={(e) => setFormData({ ...formData, date_debut: e.target.value })}
+                  />
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="dateFin">Date de fin approximative</Label>
-                  <Input id="dateFin" type="date" />
+                  <Input 
+                    id="dateFin" 
+                    type="date"
+                    value={formData.date_fin}
+                    onChange={(e) => setFormData({ ...formData, date_fin: e.target.value })}
+                  />
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="horaires">Horaires de travail</Label>
-                <Input id="horaires" placeholder="Ex: 7h-16h, du lundi au vendredi" />
-              </div>
-              <div className="grid gap-2">
                 <Label htmlFor="description">Description du poste</Label>
-                <Textarea id="description" placeholder="Décrivez les missions et compétences requises..." rows={4} />
+                <Textarea 
+                  id="description" 
+                  placeholder="Décrivez les missions et compétences requises..." 
+                  rows={4}
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="avantages">Avantages</Label>
-                <Textarea id="avantages" placeholder="Ex: Panier repas, indemnités de déplacement, primes..." rows={2} />
+                <Textarea 
+                  id="avantages" 
+                  placeholder="Ex: Panier repas, indemnités de déplacement, primes..." 
+                  rows={2}
+                  value={formData.avantages}
+                  onChange={(e) => setFormData({ ...formData, avantages: e.target.value })}
+                />
               </div>
               <div className="flex justify-end gap-3 mt-4">
-                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>Annuler</Button>
-                <Button variant="cta" onClick={() => setIsCreateDialogOpen(false)}>Publier l'offre</Button>
+                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                  Annuler
+                </Button>
+                <Button 
+                  variant="cta" 
+                  onClick={() => createMutation.mutate()}
+                  disabled={!formData.titre || !formData.lieu || createMutation.isPending}
+                >
+                  {createMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  Publier l'offre
+                </Button>
               </div>
             </div>
           </DialogContent>
@@ -299,7 +443,9 @@ const OffresPage = () => {
 
       {filteredOffres.length === 0 && (
         <div className="text-center py-12">
+          <Users className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
           <p className="text-muted-foreground">Aucune offre trouvée</p>
+          <p className="text-sm text-muted-foreground mt-1">Créez votre première offre pour commencer</p>
         </div>
       )}
     </div>
