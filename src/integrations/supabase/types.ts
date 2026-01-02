@@ -182,37 +182,64 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address: string | null
           avatar_url: string | null
+          city: string | null
+          company_name: string | null
           created_at: string
+          description: string | null
           email: string | null
+          employees_count: string | null
           first_name: string | null
           id: string
           last_name: string | null
           phone: string | null
+          postal_code: string | null
+          sector: string | null
+          siret: string | null
           updated_at: string
           user_id: string
+          website: string | null
         }
         Insert: {
+          address?: string | null
           avatar_url?: string | null
+          city?: string | null
+          company_name?: string | null
           created_at?: string
+          description?: string | null
           email?: string | null
+          employees_count?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
           phone?: string | null
+          postal_code?: string | null
+          sector?: string | null
+          siret?: string | null
           updated_at?: string
           user_id: string
+          website?: string | null
         }
         Update: {
+          address?: string | null
           avatar_url?: string | null
+          city?: string | null
+          company_name?: string | null
           created_at?: string
+          description?: string | null
           email?: string | null
+          employees_count?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
           phone?: string | null
+          postal_code?: string | null
+          sector?: string | null
+          siret?: string | null
           updated_at?: string
           user_id?: string
+          website?: string | null
         }
         Relationships: []
       }

@@ -1,0 +1,12 @@
+
+-- Add enterprise fields to profiles table
+ALTER TABLE public.profiles
+ADD COLUMN IF NOT EXISTS company_name TEXT,
+ADD COLUMN IF NOT EXISTS siret TEXT,
+ADD COLUMN IF NOT EXISTS address TEXT,
+ADD COLUMN IF NOT EXISTS city TEXT,
+ADD COLUMN IF NOT EXISTS postal_code TEXT,
+ADD COLUMN IF NOT EXISTS website TEXT,
+ADD COLUMN IF NOT EXISTS description TEXT,
+ADD COLUMN IF NOT EXISTS sector TEXT,
+ADD COLUMN IF NOT EXISTS employees_count TEXT;
