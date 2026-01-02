@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import OffresLayout from "./OffresLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { 
   Plus, 
   Search, 
@@ -14,8 +16,10 @@ import {
   Clock,
   Users,
   Filter,
-  MoreVertical,
-  CalendarClock
+  CalendarClock,
+  Loader2,
+  User,
+  Star,
 } from "lucide-react";
 import {
   Dialog,
@@ -33,99 +37,68 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
-const mockOffres = [
-  { 
-    id: 1, 
-    titre: "Maçon qualifié", 
-    lieu: "Paris 75", 
-    type: "CDI Intérimaire", 
-    salaire: "14-16€/h",
-    candidatures: 12, 
-    status: "active", 
-    date: "15/01/2025",
-    dateFin: "30/06/2025",
-    description: "Nous recherchons un maçon qualifié pour des chantiers de construction neuve.",
-    experience: "3-5 ans"
-  },
-  { 
-    id: 2, 
-    titre: "Électricien industriel", 
-    lieu: "Lyon 69", 
-    type: "Mission", 
-    salaire: "15-18€/h",
-    candidatures: 8, 
-    status: "active", 
-    date: "14/01/2025",
-    dateFin: "14/07/2025",
-    description: "Mission de 6 mois pour installation électrique industrielle.",
-    experience: "5+ ans"
-  },
-  { 
-    id: 3, 
-    titre: "Soudeur TIG/MIG", 
-    lieu: "Marseille 13", 
-    type: "Mission", 
-    salaire: "16-20€/h",
-    candidatures: 5, 
-    status: "pourvue", 
-    date: "10/01/2025",
-    dateFin: "10/04/2025",
-    description: "Soudure sur structures métalliques.",
-    experience: "3-5 ans"
-  },
-  { 
-    id: 4, 
-    titre: "Chef d'équipe BTP", 
-    lieu: "Bordeaux 33", 
-    type: "CDI Intérimaire", 
-    salaire: "18-22€/h",
-    candidatures: 15, 
-    status: "active", 
-    date: "12/01/2025",
-    dateFin: "31/12/2025",
-    description: "Encadrement d'équipe sur chantier de rénovation.",
-    experience: "5+ ans"
-  },
-  { 
-    id: 5, 
-    titre: "Plombier chauffagiste", 
-    lieu: "Toulouse 31", 
-    type: "Mission", 
-    salaire: "14-17€/h",
-    candidatures: 6, 
-    status: "en_pause", 
-    date: "08/01/2025",
-    dateFin: "08/05/2025",
-    description: "Installation et maintenance de systèmes de chauffage.",
-    experience: "2-3 ans"
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 const OffresPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
+  // Fetch offres from Supabase
+  const { data: offres, isLoading } = useQuery({
+    queryKey: ['entreprise-offres'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('offres')
+        .select(`
+          *,
+          candidat_place:candidatures(id, prenom, nom, poste)
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "active":
-        return <span className="px-2.5 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">Active</span>;
+        return <Badge className="bg-green-100 text-green-700">Active</Badge>;
       case "pourvue":
-        return <span className="px-2.5 py-1 text-xs font-medium bg-muted text-muted-foreground rounded-full">Pourvue</span>;
+        return <Badge className="bg-blue-100 text-blue-700">En cours</Badge>;
+      case "terminee":
+        return <Badge variant="secondary">Terminée</Badge>;
       case "en_pause":
-        return <span className="px-2.5 py-1 text-xs font-medium bg-yellow-100 text-yellow-700 rounded-full">En pause</span>;
+        return <Badge className="bg-yellow-100 text-yellow-700">En pause</Badge>;
       default:
-        return null;
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
-  const filteredOffres = mockOffres.filter((offre) => {
+  const formatCandidatName = (prenom: string | null, nom: string | null) => {
+    if (!prenom && !nom) return "Intérimaire";
+    return `${prenom || ''} ${nom ? nom[0] + '.' : ''}`.trim();
+  };
+
+  const filteredOffres = offres?.filter((offre) => {
     const matchesSearch = offre.titre.toLowerCase().includes(searchQuery.toLowerCase()) ||
       offre.lieu.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === "all" || offre.status === filterStatus;
     return matchesSearch && matchesStatus;
-  });
+  }) || [];
+
+  if (isLoading) {
+    return (
+      <OffresLayout title="Mes offres">
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </OffresLayout>
+    );
+  }
 
   return (
     <OffresLayout title="Mes offres">
@@ -242,7 +215,8 @@ const OffresPage = () => {
           <SelectContent>
             <SelectItem value="all">Tous les statuts</SelectItem>
             <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="pourvue">Pourvue</SelectItem>
+            <SelectItem value="pourvue">En cours</SelectItem>
+            <SelectItem value="terminee">Terminée</SelectItem>
             <SelectItem value="en_pause">En pause</SelectItem>
           </SelectContent>
         </Select>
@@ -263,47 +237,60 @@ const OffresPage = () => {
                       <h3 className="font-semibold text-lg text-foreground">{offre.titre}</h3>
                       {getStatusBadge(offre.status)}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">{offre.description}</p>
+                    <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                      {offre.description || "Aucune description"}
+                    </p>
                     <div className="flex flex-wrap items-center gap-4 mt-3">
                       <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
                         <MapPin className="w-4 h-4" /> {offre.lieu}
                       </span>
-                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <Euro className="w-4 h-4" /> {offre.salaire}
-                      </span>
-                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <Clock className="w-4 h-4" /> {offre.experience}
-                      </span>
-                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <CalendarClock className="w-4 h-4" /> Fin: {offre.dateFin}
-                      </span>
-                      <span className="px-2.5 py-1 text-xs font-medium bg-accent text-accent-foreground rounded-full">
-                        {offre.type}
-                      </span>
+                      {(offre.salaire_min || offre.salaire_max) && (
+                        <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                          <Euro className="w-4 h-4" /> {offre.salaire_min}-{offre.salaire_max}€/h
+                        </span>
+                      )}
+                      {offre.experience_requise && (
+                        <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                          <Clock className="w-4 h-4" /> {offre.experience_requise}
+                        </span>
+                      )}
+                      {offre.date_fin && (
+                        <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                          <CalendarClock className="w-4 h-4" /> 
+                          Fin: {format(new Date(offre.date_fin), 'dd/MM/yyyy', { locale: fr })}
+                        </span>
+                      )}
+                      <Badge variant="outline">{offre.type_contrat}</Badge>
                     </div>
+                    
+                    {/* Show assigned candidat for "pourvue" status */}
+                    {(offre.status === 'pourvue' || offre.status === 'terminee') && offre.candidat_place && (
+                      <div className="flex items-center gap-2 mt-3 p-2 bg-muted/50 rounded-lg w-fit">
+                        <User className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium text-foreground">
+                          {formatCandidatName(offre.candidat_place.prenom, offre.candidat_place.nom)}
+                        </span>
+                        {offre.status === 'terminee' && (
+                          <Badge variant="secondary" className="ml-2">Terminée</Badge>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-4 lg:flex-col lg:items-end">
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-primary" />
-                  <span className="font-semibold text-foreground">{offre.candidatures}</span>
-                  <span className="text-sm text-muted-foreground">candidatures</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Link to={`/dashboard-entreprise/offres/${offre.id}`}>
-                    <Button variant="outline" size="sm">
-                      <Eye className="w-4 h-4 mr-2" />
-                      Voir
-                    </Button>
-                  </Link>
-                  <Button variant="ghost" size="icon" className="h-9 w-9">
-                    <Edit2 className="w-4 h-4" />
+              <div className="flex items-center gap-2">
+                <Link to={`/dashboard-entreprise/offres/${offre.id}`}>
+                  <Button variant="outline" size="sm">
+                    <Eye className="w-4 h-4 mr-2" />
+                    Voir
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:text-destructive">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
+                </Link>
+                <Button variant="ghost" size="icon" className="h-9 w-9">
+                  <Edit2 className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:text-destructive">
+                  <Trash2 className="w-4 h-4" />
+                </Button>
               </div>
             </div>
           </div>
