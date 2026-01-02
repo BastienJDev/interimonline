@@ -8,11 +8,13 @@ import {
   Users, 
   Briefcase, 
   Shield,
+  UserCheck,
   X
 } from "lucide-react";
 
 const navItems = [
   { label: "Tableau de bord", href: "/admin", icon: <BarChart3 className="w-5 h-5" /> },
+  { label: "Validations", href: "/admin/validations", icon: <UserCheck className="w-5 h-5" /> },
   { label: "Candidats", href: "/admin/candidats", icon: <Users className="w-5 h-5" /> },
   { label: "Offres", href: "/admin/offres", icon: <Briefcase className="w-5 h-5" /> },
   { label: "Entreprises", href: "/admin/entreprises", icon: <Shield className="w-5 h-5" /> },

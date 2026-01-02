@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
+import PendingApproval from "./pages/PendingApproval";
 import DashboardEntreprise from "./pages/DashboardEntreprise";
 import DashboardInterimaire from "./pages/DashboardInterimaire";
 import OffresPage from "./pages/entreprise/OffresPage";
@@ -27,6 +28,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminCandidatsPage from "./pages/admin/AdminCandidatsPage";
 import AdminOffresPage from "./pages/admin/AdminOffresPage";
 import AdminEntreprisesPage from "./pages/admin/AdminEntreprisesPage";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +43,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/pending-approval" element={<PendingApproval />} />
             <Route path="/nos-interimaires" element={<NosInterimaires />} />
             <Route path="/nos-clients" element={<NosClients />} />
             <Route path="/nos-services" element={<NosServices />} />
@@ -58,6 +61,7 @@ const App = () => (
             {/* Admin routes */}
             <Route path="/admin" element={<AdminLayout />}>
               <Route index element={<AdminDashboard />} />
+              <Route path="validations" element={<AdminUsersPage />} />
               <Route path="candidats" element={<AdminCandidatsPage />} />
               <Route path="offres" element={<AdminOffresPage />} />
               <Route path="entreprises" element={<AdminEntreprisesPage />} />

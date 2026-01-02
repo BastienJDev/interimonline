@@ -183,6 +183,9 @@ export type Database = {
       profiles: {
         Row: {
           address: string | null
+          approval_date: string | null
+          approval_status: string | null
+          approved_by: string | null
           avatar_url: string | null
           city: string | null
           company_name: string | null
@@ -195,14 +198,19 @@ export type Database = {
           last_name: string | null
           phone: string | null
           postal_code: string | null
+          rejection_reason: string | null
           sector: string | null
           siret: string | null
           updated_at: string
           user_id: string
+          user_type: string | null
           website: string | null
         }
         Insert: {
           address?: string | null
+          approval_date?: string | null
+          approval_status?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           city?: string | null
           company_name?: string | null
@@ -215,14 +223,19 @@ export type Database = {
           last_name?: string | null
           phone?: string | null
           postal_code?: string | null
+          rejection_reason?: string | null
           sector?: string | null
           siret?: string | null
           updated_at?: string
           user_id: string
+          user_type?: string | null
           website?: string | null
         }
         Update: {
           address?: string | null
+          approval_date?: string | null
+          approval_status?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           city?: string | null
           company_name?: string | null
@@ -235,10 +248,12 @@ export type Database = {
           last_name?: string | null
           phone?: string | null
           postal_code?: string | null
+          rejection_reason?: string | null
           sector?: string | null
           siret?: string | null
           updated_at?: string
           user_id?: string
+          user_type?: string | null
           website?: string | null
         }
         Relationships: []
