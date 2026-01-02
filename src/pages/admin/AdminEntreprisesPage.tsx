@@ -356,11 +356,6 @@ const AdminEntreprisesPage = () => {
                     {selectedProfile.company_name || "Entreprise non renseignée"}
                   </h3>
                   <p className="text-sm text-muted-foreground">{selectedProfile.sector || "Secteur non défini"}</p>
-                  <div className="flex gap-2 mt-1">
-                    {profileRoles.map((role) => (
-                      <span key={role}>{getRoleBadge(role)}</span>
-                    ))}
-                  </div>
                 </div>
               </div>
 
