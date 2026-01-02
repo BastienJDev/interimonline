@@ -22,6 +22,7 @@ import {
   History,
   Building2,
   Calendar,
+  Star,
 } from "lucide-react";
 import {
   Dialog,
@@ -80,6 +81,7 @@ interface MissionHistory {
   date_fin: string | null;
   status: string;
   note: string | null;
+  rating: number | null;
 }
 
 const AdminCandidatsPage = () => {
@@ -122,6 +124,14 @@ const AdminCandidatsPage = () => {
     },
     enabled: !!selectedCandidat,
   });
+
+  // Calculate average rating
+  const averageRating = missionHistory && missionHistory.length > 0
+    ? missionHistory.filter(m => m.rating !== null).reduce((acc, m) => acc + (m.rating || 0), 0) / 
+      missionHistory.filter(m => m.rating !== null).length
+    : null;
+
+  const ratedMissionsCount = missionHistory?.filter(m => m.rating !== null).length || 0;
 
   // Get unique cities from candidats for filter suggestions
   const uniqueCities = [...new Set(candidats?.map(c => c.city || c.mobilite).filter(Boolean) || [])];
@@ -367,20 +377,46 @@ const AdminCandidatsPage = () => {
               </TabsList>
               
               <TabsContent value="profil" className="space-y-6 mt-4">
-                {/* Header with avatar */}
-                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                    <User className="w-8 h-8 text-primary" />
+                {/* Header with avatar and rating */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                      <User className="w-8 h-8 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold">
+                        {selectedCandidat.first_name} {selectedCandidat.last_name}
+                      </h3>
+                      <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Validé
+                      </Badge>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold">
-                      {selectedCandidat.first_name} {selectedCandidat.last_name}
-                    </h3>
-                    <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      Validé
-                    </Badge>
-                  </div>
+                  
+                  {/* Average Rating Display */}
+                  {averageRating !== null && !isNaN(averageRating) && (
+                    <div className="text-right">
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star 
+                            key={star} 
+                            className={`w-5 h-5 ${
+                              star <= Math.round(averageRating) 
+                                ? 'text-yellow-400 fill-yellow-400' 
+                                : 'text-gray-300'
+                            }`} 
+                          />
+                        ))}
+                        <span className="ml-2 font-semibold text-foreground">
+                          {averageRating.toFixed(1)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {ratedMissionsCount} avis
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Contact info */}
@@ -550,6 +586,25 @@ const AdminCandidatsPage = () => {
                               </div>
                             )}
                           </div>
+                          
+                          {/* Rating display */}
+                          {mission.rating !== null && (
+                            <div className="flex items-center gap-1 mt-3">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star 
+                                  key={star} 
+                                  className={`w-4 h-4 ${
+                                    star <= mission.rating! 
+                                      ? 'text-yellow-400 fill-yellow-400' 
+                                      : 'text-gray-300'
+                                  }`} 
+                                />
+                              ))}
+                              <span className="text-sm text-muted-foreground ml-1">
+                                Note de l'entreprise
+                              </span>
+                            </div>
+                          )}
                           
                           {mission.note && (
                             <p className="text-sm text-muted-foreground mt-2 italic">
