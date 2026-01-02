@@ -10,7 +10,7 @@ interface NavItem {
 
 interface DashboardSidebarProps {
   navItems: NavItem[];
-  userType: "entreprise" | "interimaire";
+  userType: "entreprise" | "interimaire" | "admin";
 }
 
 const DashboardSidebar = ({ navItems, userType }: DashboardSidebarProps) => {
@@ -26,7 +26,7 @@ const DashboardSidebar = ({ navItems, userType }: DashboardSidebarProps) => {
 
       <div className="p-4">
         <div className="px-3 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          {userType === "entreprise" ? "Espace Entreprise" : "Espace Intérimaire"}
+          {userType === "entreprise" ? "Espace Entreprise" : userType === "admin" ? "Administration" : "Espace Intérimaire"}
         </div>
       </div>
 
