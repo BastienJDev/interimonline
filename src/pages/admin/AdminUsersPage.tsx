@@ -36,6 +36,9 @@ import {
   UserCheck,
   UserX,
   Eye,
+  Briefcase,
+  Car,
+  MapPin,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -52,6 +55,12 @@ interface UserProfile {
   approval_date: string | null;
   rejection_reason: string | null;
   created_at: string;
+  metier: string | null;
+  experience: string | null;
+  competences: string | null;
+  permis: string | null;
+  deplacement: string | null;
+  mobilite: string | null;
 }
 
 const AdminUsersPage = () => {
@@ -59,7 +68,7 @@ const AdminUsersPage = () => {
   const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  
   
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -76,7 +85,7 @@ const AdminUsersPage = () => {
 
   useEffect(() => {
     filterUsers();
-  }, [users, searchTerm, filterStatus]);
+  }, [users, searchTerm]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -84,6 +93,7 @@ const AdminUsersPage = () => {
       .from('profiles')
       .select('*')
       .eq('user_type', 'interimaire')
+      .eq('approval_status', 'pending')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -107,12 +117,9 @@ const AdminUsersPage = () => {
         (u) =>
           u.first_name?.toLowerCase().includes(term) ||
           u.last_name?.toLowerCase().includes(term) ||
-          u.email?.toLowerCase().includes(term)
+          u.email?.toLowerCase().includes(term) ||
+          u.metier?.toLowerCase().includes(term)
       );
-    }
-
-    if (filterStatus !== 'all') {
-      filtered = filtered.filter((u) => u.approval_status === filterStatus);
     }
 
     setFilteredUsers(filtered);
@@ -206,20 +213,20 @@ const AdminUsersPage = () => {
     }
   };
 
-  const pendingCount = users.filter((u) => u.approval_status === 'pending').length;
+  
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Gestion des utilisateurs</h1>
+          <h1 className="text-2xl font-bold text-foreground">Validations</h1>
           <p className="text-muted-foreground">
-            Validez ou refusez les inscriptions des intérimaires
+            Validez les nouvelles inscriptions des intérimaires
           </p>
         </div>
-        {pendingCount > 0 && (
+        {users.length > 0 && (
           <Badge variant="destructive" className="text-sm px-3 py-1">
-            {pendingCount} en attente de validation
+            {users.length} en attente de validation
           </Badge>
         )}
       </div>
@@ -227,49 +234,14 @@ const AdminUsersPage = () => {
       {/* Filters */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher par nom ou email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant={filterStatus === 'all' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilterStatus('all')}
-              >
-                Tous
-              </Button>
-              <Button
-                variant={filterStatus === 'pending' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilterStatus('pending')}
-              >
-                <Clock className="w-4 h-4 mr-1" />
-                En attente
-              </Button>
-              <Button
-                variant={filterStatus === 'approved' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilterStatus('approved')}
-              >
-                <CheckCircle className="w-4 h-4 mr-1" />
-                Validés
-              </Button>
-              <Button
-                variant={filterStatus === 'rejected' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilterStatus('rejected')}
-              >
-                <XCircle className="w-4 h-4 mr-1" />
-                Refusés
-              </Button>
-            </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher par nom, email ou métier..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
           </div>
         </CardContent>
       </Card>
@@ -277,7 +249,7 @@ const AdminUsersPage = () => {
       {/* Users Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Intérimaires inscrits</CardTitle>
+          <CardTitle>Inscriptions en attente</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -286,16 +258,16 @@ const AdminUsersPage = () => {
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              Aucun utilisateur trouvé
+              Aucune inscription en attente
             </div>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nom</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead>Métier</TableHead>
+                  <TableHead>Téléphone</TableHead>
                   <TableHead>Date d'inscription</TableHead>
-                  <TableHead>Statut</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -305,11 +277,11 @@ const AdminUsersPage = () => {
                     <TableCell className="font-medium">
                       {userProfile.first_name} {userProfile.last_name}
                     </TableCell>
-                    <TableCell>{userProfile.email}</TableCell>
+                    <TableCell>{userProfile.metier || '-'}</TableCell>
+                    <TableCell>{userProfile.phone || '-'}</TableCell>
                     <TableCell>
                       {format(new Date(userProfile.created_at), 'dd MMM yyyy', { locale: fr })}
                     </TableCell>
-                    <TableCell>{getStatusBadge(userProfile.approval_status)}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button
@@ -322,27 +294,23 @@ const AdminUsersPage = () => {
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
-                        {userProfile.approval_status === 'pending' && (
-                          <>
-                            <Button
-                              variant="default"
-                              size="sm"
-                              onClick={() => handleApprove(userProfile)}
-                            >
-                              <UserCheck className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedUser(userProfile);
-                                setShowRejectDialog(true);
-                              }}
-                            >
-                              <UserX className="w-4 h-4" />
-                            </Button>
-                          </>
-                        )}
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleApprove(userProfile)}
+                        >
+                          <UserCheck className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedUser(userProfile);
+                            setShowRejectDialog(true);
+                          }}
+                        >
+                          <UserX className="w-4 h-4" />
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -355,15 +323,16 @@ const AdminUsersPage = () => {
 
       {/* User Detail Dialog */}
       <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Détails de l'utilisateur</DialogTitle>
+            <DialogTitle>Détails du candidat</DialogTitle>
             <DialogDescription>
-              Informations fournies lors de l'inscription
+              Toutes les informations fournies lors de l'inscription
             </DialogDescription>
           </DialogHeader>
           {selectedUser && (
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* Header avec nom et statut */}
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
                   <User className="w-8 h-8 text-primary" />
@@ -376,25 +345,97 @@ const AdminUsersPage = () => {
                 </div>
               </div>
 
-              <div className="grid gap-3">
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Mail className="w-4 h-4" />
-                  <span>{selectedUser.email}</span>
-                </div>
-                {selectedUser.phone && (
+              {/* Informations de contact */}
+              <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                <h4 className="font-medium text-foreground">Contact</h4>
+                <div className="grid gap-2">
                   <div className="flex items-center gap-2 text-muted-foreground">
-                    <Phone className="w-4 h-4" />
-                    <span>{selectedUser.phone}</span>
+                    <Mail className="w-4 h-4" />
+                    <span>{selectedUser.email}</span>
                   </div>
-                )}
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Clock className="w-4 h-4" />
-                  <span>
-                    Inscrit le{' '}
-                    {format(new Date(selectedUser.created_at), 'dd MMMM yyyy à HH:mm', {
-                      locale: fr,
-                    })}
-                  </span>
+                  {selectedUser.phone && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Phone className="w-4 h-4" />
+                      <span>{selectedUser.phone}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Clock className="w-4 h-4" />
+                    <span>
+                      Inscrit le{' '}
+                      {format(new Date(selectedUser.created_at), 'dd MMMM yyyy à HH:mm', {
+                        locale: fr,
+                      })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Expérience professionnelle */}
+              <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                <h4 className="font-medium text-foreground">Expérience professionnelle</h4>
+                <div className="grid gap-3">
+                  {selectedUser.metier && (
+                    <div className="flex items-start gap-2">
+                      <Briefcase className="w-4 h-4 mt-0.5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium">Métier principal</p>
+                        <p className="text-muted-foreground">{selectedUser.metier}</p>
+                      </div>
+                    </div>
+                  )}
+                  {selectedUser.experience && (
+                    <div className="flex items-start gap-2">
+                      <Clock className="w-4 h-4 mt-0.5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium">Années d'expérience</p>
+                        <p className="text-muted-foreground">{selectedUser.experience}</p>
+                      </div>
+                    </div>
+                  )}
+                  {selectedUser.competences && (
+                    <div className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 mt-0.5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium">Compétences</p>
+                        <p className="text-muted-foreground whitespace-pre-wrap">{selectedUser.competences}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Mobilité */}
+              <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                <h4 className="font-medium text-foreground">Mobilité</h4>
+                <div className="grid gap-3">
+                  {selectedUser.permis && (
+                    <div className="flex items-start gap-2">
+                      <Car className="w-4 h-4 mt-0.5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium">Permis</p>
+                        <p className="text-muted-foreground">{selectedUser.permis}</p>
+                      </div>
+                    </div>
+                  )}
+                  {selectedUser.deplacement && (
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-4 h-4 mt-0.5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium">Moyen de déplacement</p>
+                        <p className="text-muted-foreground">{selectedUser.deplacement}</p>
+                      </div>
+                    </div>
+                  )}
+                  {selectedUser.mobilite && (
+                    <div className="flex items-start gap-2">
+                      <MapPin className="w-4 h-4 mt-0.5 text-primary" />
+                      <div>
+                        <p className="text-sm font-medium">Zone de mobilité</p>
+                        <p className="text-muted-foreground">{selectedUser.mobilite}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 

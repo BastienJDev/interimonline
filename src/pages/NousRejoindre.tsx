@@ -112,6 +112,12 @@ const NousRejoindre = () => {
             phone: interimaireForm.telephone,
             user_type: 'interimaire',
             approval_status: 'pending',
+            metier: interimaireForm.metier,
+            experience: interimaireForm.experience,
+            competences: interimaireForm.competences,
+            permis: interimaireForm.permis,
+            deplacement: interimaireForm.deplacement,
+            mobilite: interimaireForm.mobilite,
           })
           .eq('user_id', authData.user.id);
 

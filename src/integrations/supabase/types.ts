@@ -189,13 +189,19 @@ export type Database = {
           avatar_url: string | null
           city: string | null
           company_name: string | null
+          competences: string | null
           created_at: string
+          deplacement: string | null
           description: string | null
           email: string | null
           employees_count: string | null
+          experience: string | null
           first_name: string | null
           id: string
           last_name: string | null
+          metier: string | null
+          mobilite: string | null
+          permis: string | null
           phone: string | null
           postal_code: string | null
           rejection_reason: string | null
@@ -214,13 +220,19 @@ export type Database = {
           avatar_url?: string | null
           city?: string | null
           company_name?: string | null
+          competences?: string | null
           created_at?: string
+          deplacement?: string | null
           description?: string | null
           email?: string | null
           employees_count?: string | null
+          experience?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
+          metier?: string | null
+          mobilite?: string | null
+          permis?: string | null
           phone?: string | null
           postal_code?: string | null
           rejection_reason?: string | null
@@ -239,13 +251,19 @@ export type Database = {
           avatar_url?: string | null
           city?: string | null
           company_name?: string | null
+          competences?: string | null
           created_at?: string
+          deplacement?: string | null
           description?: string | null
           email?: string | null
           employees_count?: string | null
+          experience?: string | null
           first_name?: string | null
           id?: string
           last_name?: string | null
+          metier?: string | null
+          mobilite?: string | null
+          permis?: string | null
           phone?: string | null
           postal_code?: string | null
           rejection_reason?: string | null
