@@ -23,7 +23,7 @@ const navItems = [
   { label: "Tableau de bord", href: "/dashboard-entreprise", icon: <BarChart3 className="w-5 h-5" /> },
   { label: "Mes offres", href: "/dashboard-entreprise/offres", icon: <Briefcase className="w-5 h-5" /> },
   { label: "Candidatures", href: "/dashboard-entreprise/candidatures", icon: <Users className="w-5 h-5" /> },
-  { label: "Documents", href: "/dashboard-entreprise/documents", icon: <FileText className="w-5 h-5" /> },
+  { label: "Mon profil", href: "/dashboard-entreprise/profil", icon: <FileText className="w-5 h-5" /> },
 ];
 
 const mockOffres = [
