@@ -1,12 +1,11 @@
 import { useState } from "react";
 import DashboardSidebar from "@/components/dashboard/DashboardSidebar";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import { Briefcase, Users, FileText, BarChart3, X, Clock } from "lucide-react";
+import { Briefcase, Users, FileText, BarChart3, X } from "lucide-react";
 
 const navItems = [
   { label: "Tableau de bord", href: "/dashboard-entreprise", icon: <BarChart3 className="w-5 h-5" /> },
   { label: "Mes offres", href: "/dashboard-entreprise/offres", icon: <Briefcase className="w-5 h-5" /> },
-  { label: "Mes missions", href: "/dashboard-entreprise/missions", icon: <Clock className="w-5 h-5" /> },
   { label: "Candidatures", href: "/dashboard-entreprise/candidatures", icon: <Users className="w-5 h-5" /> },
   { label: "Mon profil", href: "/dashboard-entreprise/profil", icon: <FileText className="w-5 h-5" /> },
 ];
