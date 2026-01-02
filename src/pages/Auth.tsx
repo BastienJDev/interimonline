@@ -43,10 +43,31 @@ const Auth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!user) return;
-    if (loading || rolesLoading) return;
+    const checkUserAndRedirect = async () => {
+      if (!user) return;
+      if (loading || rolesLoading) return;
 
-    navigate(isAdmin ? '/admin' : '/dashboard-entreprise');
+      // Check if admin
+      if (isAdmin) {
+        navigate('/admin');
+        return;
+      }
+
+      // Check profile for approval status
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('user_type, approval_status')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profile?.user_type === 'interimaire' && profile?.approval_status !== 'approved') {
+        navigate('/pending-approval');
+      } else {
+        navigate('/dashboard-entreprise');
+      }
+    };
+
+    checkUserAndRedirect();
   }, [user, isAdmin, loading, rolesLoading, navigate]);
 
   const handleForgotPassword = async (e: React.FormEvent) => {

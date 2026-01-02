@@ -1,20 +1,60 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { HardHat, Building2, ArrowLeft, ArrowRight, Check, Upload } from "lucide-react";
+import { HardHat, Building2, ArrowLeft, ArrowRight, Check, Upload, Mail, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 type UserType = "interimaire" | "recruteur" | null;
 
 const NousRejoindre = () => {
   const [userType, setUserType] = useState<UserType>(null);
   const [currentStep, setCurrentStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [registrationComplete, setRegistrationComplete] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
+  
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  // Interimaire form state
+  const [interimaireForm, setInterimaireForm] = useState({
+    prenom: '',
+    nom: '',
+    email: '',
+    telephone: '',
+    password: '',
+    metier: '',
+    experience: '',
+    competences: '',
+    permis: '',
+    deplacement: '',
+    mobilite: '',
+  });
+
+  // Recruteur form state
+  const [recruteurForm, setRecruteurForm] = useState({
+    prenom: '',
+    nom: '',
+    email: '',
+    telephone: '',
+    password: '',
+    entreprise: '',
+    siret: '',
+    ville: '',
+    secteur: '',
+    effectif: '',
+    description: '',
+    specialites: '',
+  });
 
   const handleBack = () => {
     if (currentStep > 1) {
@@ -29,6 +69,193 @@ const NousRejoindre = () => {
       setCurrentStep(currentStep + 1);
     }
   };
+
+  const handleInterimaireSubmit = async () => {
+    setIsLoading(true);
+    try {
+      // 1. Create auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: interimaireForm.email,
+        password: interimaireForm.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth`,
+          data: {
+            first_name: interimaireForm.prenom,
+            last_name: interimaireForm.nom,
+          },
+        },
+      });
+
+      if (authError) {
+        if (authError.message.includes('already registered')) {
+          toast({
+            title: 'Compte existant',
+            description: 'Un compte existe déjà avec cet email',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Erreur',
+            description: authError.message,
+            variant: 'destructive',
+          });
+        }
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Update profile with user_type and additional info
+      if (authData.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            phone: interimaireForm.telephone,
+            user_type: 'interimaire',
+            approval_status: 'pending',
+          })
+          .eq('user_id', authData.user.id);
+
+        if (profileError) {
+          console.error('Profile update error:', profileError);
+        }
+      }
+
+      setRegisteredEmail(interimaireForm.email);
+      setRegistrationComplete(true);
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Une erreur est survenue lors de l\'inscription',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRecruteurSubmit = async () => {
+    setIsLoading(true);
+    try {
+      // 1. Create auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: recruteurForm.email,
+        password: recruteurForm.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth`,
+          data: {
+            first_name: recruteurForm.prenom,
+            last_name: recruteurForm.nom,
+          },
+        },
+      });
+
+      if (authError) {
+        if (authError.message.includes('already registered')) {
+          toast({
+            title: 'Compte existant',
+            description: 'Un compte existe déjà avec cet email',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Erreur',
+            description: authError.message,
+            variant: 'destructive',
+          });
+        }
+        setIsLoading(false);
+        return;
+      }
+
+      // 2. Update profile with company info
+      if (authData.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            phone: recruteurForm.telephone,
+            company_name: recruteurForm.entreprise,
+            siret: recruteurForm.siret,
+            city: recruteurForm.ville,
+            sector: recruteurForm.secteur,
+            employees_count: recruteurForm.effectif,
+            description: recruteurForm.description,
+            user_type: 'entreprise',
+            approval_status: 'approved', // Entreprises are auto-approved
+          })
+          .eq('user_id', authData.user.id);
+
+        if (profileError) {
+          console.error('Profile update error:', profileError);
+        }
+      }
+
+      setRegisteredEmail(recruteurForm.email);
+      setRegistrationComplete(true);
+    } catch (error) {
+      console.error('Registration error:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Une erreur est survenue lors de l\'inscription',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Registration complete screen
+  if (registrationComplete) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <main className="flex-1 flex items-center justify-center py-16 px-4">
+          <Card className="max-w-md w-full shadow-xl">
+            <CardContent className="pt-8 pb-8">
+              <div className="text-center space-y-4">
+                <div className="p-6 bg-primary/10 rounded-lg">
+                  <Mail className="w-16 h-16 text-primary mx-auto mb-4" />
+                  <h2 className="text-xl font-bold text-foreground mb-2">
+                    Vérifiez votre email
+                  </h2>
+                  <p className="text-muted-foreground text-sm">
+                    Un email de confirmation a été envoyé à
+                  </p>
+                  <p className="font-medium text-foreground mt-1">{registeredEmail}</p>
+                </div>
+
+                <div className="p-4 bg-muted/50 rounded-lg text-left">
+                  <h3 className="text-sm font-medium text-foreground mb-2">Prochaines étapes :</h3>
+                  <ul className="text-sm text-muted-foreground space-y-1">
+                    <li>1. Cliquez sur le lien dans l'email</li>
+                    {userType === 'interimaire' && (
+                      <>
+                        <li>2. Un administrateur vérifiera votre profil</li>
+                        <li>3. Une fois validé, vous pourrez accéder à votre espace</li>
+                      </>
+                    )}
+                    {userType === 'recruteur' && (
+                      <li>2. Connectez-vous pour accéder à votre espace</li>
+                    )}
+                  </ul>
+                </div>
+
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigate('/auth')}
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Retour à la connexion
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   // Choix initial
   if (!userType) {
@@ -110,7 +337,7 @@ const NousRejoindre = () => {
 
             <p className="text-center mt-8 text-muted-foreground">
               Vous avez déjà un compte ?{" "}
-              <Link to="/connexion" className="text-primary hover:underline font-medium">
+              <Link to="/auth" className="text-primary hover:underline font-medium">
                 Connectez-vous
               </Link>
             </p>
@@ -162,24 +389,53 @@ const NousRejoindre = () => {
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="prenom">Prénom *</Label>
-                        <Input id="prenom" placeholder="Votre prénom" />
+                        <Input 
+                          id="prenom" 
+                          placeholder="Votre prénom"
+                          value={interimaireForm.prenom}
+                          onChange={(e) => setInterimaireForm({...interimaireForm, prenom: e.target.value})}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="nom">Nom *</Label>
-                        <Input id="nom" placeholder="Votre nom" />
+                        <Input 
+                          id="nom" 
+                          placeholder="Votre nom"
+                          value={interimaireForm.nom}
+                          onChange={(e) => setInterimaireForm({...interimaireForm, nom: e.target.value})}
+                        />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email *</Label>
-                      <Input id="email" type="email" placeholder="votre@email.com" />
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        placeholder="votre@email.com"
+                        value={interimaireForm.email}
+                        onChange={(e) => setInterimaireForm({...interimaireForm, email: e.target.value})}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="telephone">Téléphone *</Label>
-                      <Input id="telephone" type="tel" placeholder="06 12 34 56 78" />
+                      <Input 
+                        id="telephone" 
+                        type="tel" 
+                        placeholder="06 12 34 56 78"
+                        value={interimaireForm.telephone}
+                        onChange={(e) => setInterimaireForm({...interimaireForm, telephone: e.target.value})}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="password">Mot de passe *</Label>
-                      <Input id="password" type="password" placeholder="••••••••" />
+                      <Input 
+                        id="password" 
+                        type="password" 
+                        placeholder="••••••••"
+                        value={interimaireForm.password}
+                        onChange={(e) => setInterimaireForm({...interimaireForm, password: e.target.value})}
+                      />
+                      <p className="text-xs text-muted-foreground">Minimum 6 caractères</p>
                     </div>
                   </div>
                 )}
@@ -190,7 +446,10 @@ const NousRejoindre = () => {
                     <h3 className="text-lg font-semibold">Expérience professionnelle</h3>
                     <div className="space-y-2">
                       <Label htmlFor="metier">Métier principal *</Label>
-                      <Select>
+                      <Select 
+                        value={interimaireForm.metier}
+                        onValueChange={(value) => setInterimaireForm({...interimaireForm, metier: value})}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionnez votre métier" />
                         </SelectTrigger>
@@ -209,7 +468,10 @@ const NousRejoindre = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="experience">Années d'expérience *</Label>
-                      <Select>
+                      <Select
+                        value={interimaireForm.experience}
+                        onValueChange={(value) => setInterimaireForm({...interimaireForm, experience: value})}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionnez" />
                         </SelectTrigger>
@@ -228,6 +490,8 @@ const NousRejoindre = () => {
                         id="competences" 
                         placeholder="Décrivez vos compétences, certifications, habilitations..."
                         rows={4}
+                        value={interimaireForm.competences}
+                        onChange={(e) => setInterimaireForm({...interimaireForm, competences: e.target.value})}
                       />
                     </div>
                   </div>
@@ -239,7 +503,10 @@ const NousRejoindre = () => {
                     <h3 className="text-lg font-semibold">Questions et documents</h3>
                     <div className="space-y-2">
                       <Label htmlFor="permis">Avez-vous le permis de conduire ? *</Label>
-                      <Select>
+                      <Select
+                        value={interimaireForm.permis}
+                        onValueChange={(value) => setInterimaireForm({...interimaireForm, permis: value})}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionnez" />
                         </SelectTrigger>
@@ -252,7 +519,10 @@ const NousRejoindre = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="deplacement">Êtes-vous d'accord de partir en déplacement ? *</Label>
-                      <Select>
+                      <Select
+                        value={interimaireForm.deplacement}
+                        onValueChange={(value) => setInterimaireForm({...interimaireForm, deplacement: value})}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionnez" />
                         </SelectTrigger>
@@ -265,7 +535,12 @@ const NousRejoindre = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="mobilite">Zone de mobilité *</Label>
-                      <Input id="mobilite" placeholder="Ex: Paris et Île-de-France" />
+                      <Input 
+                        id="mobilite" 
+                        placeholder="Ex: Paris et Île-de-France"
+                        value={interimaireForm.mobilite}
+                        onChange={(e) => setInterimaireForm({...interimaireForm, mobilite: e.target.value})}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label>CV (optionnel)</Label>
@@ -292,8 +567,12 @@ const NousRejoindre = () => {
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   ) : (
-                    <Button variant="cta">
-                      <Check className="w-4 h-4 mr-2" />
+                    <Button variant="cta" onClick={handleInterimaireSubmit} disabled={isLoading}>
+                      {isLoading ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Check className="w-4 h-4 mr-2" />
+                      )}
                       Créer mon compte
                     </Button>
                   )}
@@ -336,24 +615,53 @@ const NousRejoindre = () => {
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="prenom-rec">Prénom *</Label>
-                      <Input id="prenom-rec" placeholder="Votre prénom" />
+                      <Input 
+                        id="prenom-rec" 
+                        placeholder="Votre prénom"
+                        value={recruteurForm.prenom}
+                        onChange={(e) => setRecruteurForm({...recruteurForm, prenom: e.target.value})}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="nom-rec">Nom *</Label>
-                      <Input id="nom-rec" placeholder="Votre nom" />
+                      <Input 
+                        id="nom-rec" 
+                        placeholder="Votre nom"
+                        value={recruteurForm.nom}
+                        onChange={(e) => setRecruteurForm({...recruteurForm, nom: e.target.value})}
+                      />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email-rec">Email professionnel *</Label>
-                    <Input id="email-rec" type="email" placeholder="votre@entreprise.com" />
+                    <Input 
+                      id="email-rec" 
+                      type="email" 
+                      placeholder="votre@entreprise.com"
+                      value={recruteurForm.email}
+                      onChange={(e) => setRecruteurForm({...recruteurForm, email: e.target.value})}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="telephone-rec">Téléphone *</Label>
-                    <Input id="telephone-rec" type="tel" placeholder="06 12 34 56 78" />
+                    <Input 
+                      id="telephone-rec" 
+                      type="tel" 
+                      placeholder="06 12 34 56 78"
+                      value={recruteurForm.telephone}
+                      onChange={(e) => setRecruteurForm({...recruteurForm, telephone: e.target.value})}
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password-rec">Mot de passe *</Label>
-                    <Input id="password-rec" type="password" placeholder="••••••••" />
+                    <Input 
+                      id="password-rec" 
+                      type="password" 
+                      placeholder="••••••••"
+                      value={recruteurForm.password}
+                      onChange={(e) => setRecruteurForm({...recruteurForm, password: e.target.value})}
+                    />
+                    <p className="text-xs text-muted-foreground">Minimum 6 caractères</p>
                   </div>
                 </div>
 
@@ -362,22 +670,40 @@ const NousRejoindre = () => {
                   <h3 className="text-lg font-semibold border-b pb-2">Votre entreprise</h3>
                   <div className="space-y-2">
                     <Label htmlFor="entreprise">Nom de l'entreprise *</Label>
-                    <Input id="entreprise" placeholder="Nom de votre société" />
+                    <Input 
+                      id="entreprise" 
+                      placeholder="Nom de votre société"
+                      value={recruteurForm.entreprise}
+                      onChange={(e) => setRecruteurForm({...recruteurForm, entreprise: e.target.value})}
+                    />
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="siret">Numéro SIRET *</Label>
-                      <Input id="siret" placeholder="XXX XXX XXX XXXXX" />
+                      <Input 
+                        id="siret" 
+                        placeholder="XXX XXX XXX XXXXX"
+                        value={recruteurForm.siret}
+                        onChange={(e) => setRecruteurForm({...recruteurForm, siret: e.target.value})}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="ville-entreprise">Ville *</Label>
-                      <Input id="ville-entreprise" placeholder="Ex: Paris, Lyon, Marseille..." />
+                      <Input 
+                        id="ville-entreprise" 
+                        placeholder="Ex: Paris, Lyon, Marseille..."
+                        value={recruteurForm.ville}
+                        onChange={(e) => setRecruteurForm({...recruteurForm, ville: e.target.value})}
+                      />
                     </div>
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="secteur">Secteur d'activité *</Label>
-                      <Select>
+                      <Select
+                        value={recruteurForm.secteur}
+                        onValueChange={(value) => setRecruteurForm({...recruteurForm, secteur: value})}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionnez" />
                         </SelectTrigger>
@@ -396,7 +722,10 @@ const NousRejoindre = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="effectif">Nombre d'employés *</Label>
-                      <Select>
+                      <Select
+                        value={recruteurForm.effectif}
+                        onValueChange={(value) => setRecruteurForm({...recruteurForm, effectif: value})}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Sélectionnez" />
                         </SelectTrigger>
@@ -411,28 +740,25 @@ const NousRejoindre = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="description-entreprise">Description de l'entreprise *</Label>
+                    <Label htmlFor="description-entreprise">Description de l'entreprise</Label>
                     <Textarea 
                       id="description-entreprise" 
                       placeholder="Décrivez votre entreprise en quelques mots..."
                       rows={3}
+                      value={recruteurForm.description}
+                      onChange={(e) => setRecruteurForm({...recruteurForm, description: e.target.value})}
                     />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="specialites">Spécialités *</Label>
-                    <Textarea 
-                      id="specialites" 
-                      placeholder="Ex: Gros œuvre, Génie civil, Bâtiment, Électricité industrielle..."
-                      rows={2}
-                    />
-                    <p className="text-xs text-muted-foreground">Séparez les spécialités par des virgules</p>
                   </div>
                 </div>
 
                 {/* Bouton submit */}
                 <div className="pt-4">
-                  <Button variant="cta" className="w-full">
-                    <Check className="w-4 h-4 mr-2" />
+                  <Button variant="cta" className="w-full" onClick={handleRecruteurSubmit} disabled={isLoading}>
+                    {isLoading ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Check className="w-4 h-4 mr-2" />
+                    )}
                     Créer mon compte entreprise
                   </Button>
                 </div>
