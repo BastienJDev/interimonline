@@ -16,6 +16,7 @@ import CandidaturesPage from "./pages/entreprise/CandidaturesPage";
 import OffreDetailPage from "./pages/entreprise/OffreDetailPage";
 import CandidatDetailPage from "./pages/entreprise/CandidatDetailPage";
 import ProfilEntreprisePage from "./pages/entreprise/ProfilEntreprisePage";
+import MissionsEntreprisePage from "./pages/entreprise/MissionsEntreprisePage";
 import MissionsPage from "./pages/interimaire/MissionsPage";
 import ProfilPage from "./pages/interimaire/ProfilPage";
 import MissionDetailPage from "./pages/interimaire/MissionDetailPage";
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="/dashboard-entreprise/offres/:id" element={<OffreDetailPage />} />
             <Route path="/dashboard-entreprise/candidatures" element={<CandidaturesPage />} />
             <Route path="/dashboard-entreprise/profil" element={<ProfilEntreprisePage />} />
+            <Route path="/dashboard-entreprise/missions" element={<MissionsEntreprisePage />} />
             <Route path="/dashboard-entreprise/candidat/:id" element={<CandidatDetailPage />} />
             <Route path="/dashboard-interimaire" element={<DashboardInterimaire />} />
             <Route path="/dashboard-interimaire/missions" element={<MissionsPage />} />
