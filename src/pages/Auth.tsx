@@ -31,15 +31,16 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, isAdmin, loading, rolesLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    if (user) {
-      navigate('/dashboard-entreprise');
-    }
-  }, [user, navigate]);
+    if (!user) return;
+    if (loading || rolesLoading) return;
+
+    navigate(isAdmin ? '/admin' : '/dashboard-entreprise');
+  }, [user, isAdmin, loading, rolesLoading, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

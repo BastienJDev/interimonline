@@ -7,11 +7,17 @@ type AppRole = 'admin' | 'recruiter' | 'user';
 interface AuthContextType {
   user: User | null;
   session: Session | null;
-  loading: boolean;
+  loading: boolean; // auth/session loading
+  rolesLoading: boolean;
   roles: AppRole[];
   isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, firstName?: string, lastName?: string) => Promise<{ error: Error | null }>;
+  signUp: (
+    email: string,
+    password: string,
+    firstName?: string,
+    lastName?: string
+  ) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -21,6 +27,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [rolesLoading, setRolesLoading] = useState(false);
   const [roles, setRoles] = useState<AppRole[]>([]);
 
   const fetchUserRoles = async (userId: string) => {
@@ -52,11 +59,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         // Defer role fetching to avoid deadlock
         if (session?.user) {
+          setRolesLoading(true);
           setTimeout(() => {
-            fetchUserRoles(session.user.id).then(setRoles);
+            fetchUserRoles(session.user.id).then((nextRoles) => {
+              setRoles(nextRoles);
+              setRolesLoading(false);
+            });
           }, 0);
         } else {
           setRoles([]);
+          setRolesLoading(false);
         }
       }
     );
@@ -68,7 +80,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
 
       if (session?.user) {
-        fetchUserRoles(session.user.id).then(setRoles);
+        setRolesLoading(true);
+        fetchUserRoles(session.user.id).then((nextRoles) => {
+          setRoles(nextRoles);
+          setRolesLoading(false);
+        });
+      } else {
+        setRoles([]);
+        setRolesLoading(false);
       }
     });
 
@@ -103,6 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = async () => {
     await supabase.auth.signOut();
     setRoles([]);
+    setRolesLoading(false);
   };
 
   const isAdmin = roles.includes('admin');
@@ -112,6 +132,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user,
       session,
       loading,
+      rolesLoading,
       roles,
       isAdmin,
       signIn,
