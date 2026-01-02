@@ -34,6 +34,8 @@ import {
   Globe,
   Users,
   Save,
+  Briefcase,
+  Euro,
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -62,6 +64,17 @@ interface UserRole {
   role: string;
 }
 
+interface Offre {
+  id: string;
+  titre: string;
+  lieu: string;
+  type_contrat: string;
+  salaire_min: number | null;
+  salaire_max: number | null;
+  status: string;
+  created_at: string;
+}
+
 const AdminEntreprisesPage = () => {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
@@ -69,6 +82,8 @@ const AdminEntreprisesPage = () => {
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [profileRoles, setProfileRoles] = useState<string[]>([]);
+  const [profileOffres, setProfileOffres] = useState<Offre[]>([]);
+  const [loadingOffres, setLoadingOffres] = useState(false);
 
   const [formData, setFormData] = useState({
     first_name: "",
@@ -133,13 +148,25 @@ const AdminEntreprisesPage = () => {
 
   const handleViewProfile = async (profile: Profile) => {
     setSelectedProfile(profile);
+    setLoadingOffres(true);
     
+    // Fetch user roles
     const { data: roles } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", profile.user_id);
     
     setProfileRoles(roles?.map((r: UserRole) => r.role) || []);
+
+    // Fetch offers for this enterprise
+    const { data: offres } = await supabase
+      .from("offres")
+      .select("id, titre, lieu, type_contrat, salaire_min, salaire_max, status, created_at")
+      .eq("created_by", profile.user_id)
+      .order("created_at", { ascending: false });
+    
+    setProfileOffres(offres as Offre[] || []);
+    setLoadingOffres(false);
     setIsDetailDialogOpen(true);
   };
 
@@ -172,6 +199,21 @@ const AdminEntreprisesPage = () => {
         return <Badge className="bg-blue-100 text-blue-700">Utilisateur</Badge>;
       default:
         return <Badge variant="outline">{role}</Badge>;
+    }
+  };
+
+  const getOffreStatusBadge = (status: string) => {
+    switch (status) {
+      case "active":
+        return <Badge className="bg-green-100 text-green-700">En cours</Badge>;
+      case "pourvue":
+        return <Badge variant="secondary">Pourvue</Badge>;
+      case "en_pause":
+        return <Badge className="bg-yellow-100 text-yellow-700">En pause</Badge>;
+      case "terminee":
+        return <Badge className="bg-gray-100 text-gray-700">Terminée</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
@@ -299,7 +341,7 @@ const AdminEntreprisesPage = () => {
 
       {/* Detail Dialog */}
       <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Détails de l'entreprise</DialogTitle>
           </DialogHeader>
@@ -393,6 +435,54 @@ const AdminEntreprisesPage = () => {
                   <p className="text-sm">{selectedProfile.description}</p>
                 </div>
               )}
+
+              {/* Offers Section */}
+              <div className="pt-4 border-t">
+                <div className="flex items-center gap-2 mb-4">
+                  <Briefcase className="w-5 h-5 text-primary" />
+                  <h3 className="font-semibold">Offres de l'entreprise ({profileOffres.length})</h3>
+                </div>
+                
+                {loadingOffres ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                  </div>
+                ) : profileOffres.length > 0 ? (
+                  <div className="space-y-3">
+                    {profileOffres.map((offre) => (
+                      <div key={offre.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                            <Briefcase className="w-5 h-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm">{offre.titre}</p>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span className="flex items-center gap-1">
+                                <MapPin className="w-3 h-3" />
+                                {offre.lieu}
+                              </span>
+                              {offre.salaire_min && offre.salaire_max && (
+                                <span className="flex items-center gap-1">
+                                  <Euro className="w-3 h-3" />
+                                  {offre.salaire_min}-{offre.salaire_max}€/h
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {getOffreStatusBadge(offre.status)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Aucune offre pour cette entreprise
+                  </p>
+                )}
+              </div>
 
               <div className="flex justify-end pt-4">
                 <Button onClick={() => {
