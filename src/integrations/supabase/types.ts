@@ -112,6 +112,74 @@ export type Database = {
         }
         Relationships: []
       }
+      offres: {
+        Row: {
+          avantages: string | null
+          candidat_place_id: string | null
+          created_at: string
+          created_by: string | null
+          date_debut: string | null
+          date_fin: string | null
+          description: string | null
+          experience_requise: string | null
+          horaires: string | null
+          id: string
+          lieu: string
+          salaire_max: number | null
+          salaire_min: number | null
+          status: string
+          titre: string
+          type_contrat: string
+          updated_at: string
+        }
+        Insert: {
+          avantages?: string | null
+          candidat_place_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          description?: string | null
+          experience_requise?: string | null
+          horaires?: string | null
+          id?: string
+          lieu: string
+          salaire_max?: number | null
+          salaire_min?: number | null
+          status?: string
+          titre: string
+          type_contrat?: string
+          updated_at?: string
+        }
+        Update: {
+          avantages?: string | null
+          candidat_place_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          description?: string | null
+          experience_requise?: string | null
+          horaires?: string | null
+          id?: string
+          lieu?: string
+          salaire_max?: number | null
+          salaire_min?: number | null
+          status?: string
+          titre?: string
+          type_contrat?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offres_candidat_place_id_fkey"
+            columns: ["candidat_place_id"]
+            isOneToOne: false
+            referencedRelation: "candidatures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
