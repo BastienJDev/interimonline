@@ -67,10 +67,16 @@ interface UserRole {
 interface Offre {
   id: string;
   titre: string;
+  description: string | null;
   lieu: string;
   type_contrat: string;
   salaire_min: number | null;
   salaire_max: number | null;
+  experience_requise: string | null;
+  horaires: string | null;
+  avantages: string | null;
+  date_debut: string | null;
+  date_fin: string | null;
   status: string;
   created_at: string;
 }
@@ -84,6 +90,8 @@ const AdminEntreprisesPage = () => {
   const [profileRoles, setProfileRoles] = useState<string[]>([]);
   const [profileOffres, setProfileOffres] = useState<Offre[]>([]);
   const [loadingOffres, setLoadingOffres] = useState(false);
+  const [selectedOffre, setSelectedOffre] = useState<Offre | null>(null);
+  const [isOffreDialogOpen, setIsOffreDialogOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     first_name: "",
@@ -161,7 +169,7 @@ const AdminEntreprisesPage = () => {
     // Fetch offers for this enterprise
     const { data: offres } = await supabase
       .from("offres")
-      .select("id, titre, lieu, type_contrat, salaire_min, salaire_max, status, created_at")
+      .select("*")
       .eq("created_by", profile.user_id)
       .order("created_at", { ascending: false });
     
@@ -445,7 +453,14 @@ const AdminEntreprisesPage = () => {
                 ) : profileOffres.length > 0 ? (
                   <div className="space-y-3">
                     {profileOffres.map((offre) => (
-                      <div key={offre.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div 
+                        key={offre.id} 
+                        className="flex items-center justify-between p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
+                        onClick={() => {
+                          setSelectedOffre(offre);
+                          setIsOffreDialogOpen(true);
+                        }}
+                      >
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
                             <Briefcase className="w-5 h-5 text-primary" />
@@ -468,6 +483,7 @@ const AdminEntreprisesPage = () => {
                         </div>
                         <div className="flex items-center gap-2">
                           {getOffreStatusBadge(offre.status)}
+                          <Eye className="w-4 h-4 text-muted-foreground" />
                         </div>
                       </div>
                     ))}
@@ -637,6 +653,112 @@ const AdminEntreprisesPage = () => {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Offre Detail Dialog */}
+      <Dialog open={isOffreDialogOpen} onOpenChange={setIsOffreDialogOpen}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>Détails de l'offre</DialogTitle>
+          </DialogHeader>
+          {selectedOffre && (
+            <div className="space-y-4 py-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center">
+                  <Briefcase className="w-7 h-7 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold">{selectedOffre.titre}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    {getOffreStatusBadge(selectedOffre.status)}
+                    <Badge variant="outline">{selectedOffre.type_contrat}</Badge>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-3 pt-4 border-t">
+                <div className="flex items-center gap-3">
+                  <MapPin className="w-5 h-5 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Localisation</p>
+                    <p className="font-medium">{selectedOffre.lieu}</p>
+                  </div>
+                </div>
+                
+                {(selectedOffre.salaire_min || selectedOffre.salaire_max) && (
+                  <div className="flex items-center gap-3">
+                    <Euro className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Salaire</p>
+                      <p className="font-medium">
+                        {selectedOffre.salaire_min && selectedOffre.salaire_max 
+                          ? `${selectedOffre.salaire_min} - ${selectedOffre.salaire_max}€/h`
+                          : selectedOffre.salaire_min 
+                            ? `À partir de ${selectedOffre.salaire_min}€/h`
+                            : `Jusqu'à ${selectedOffre.salaire_max}€/h`
+                        }
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedOffre.experience_requise && (
+                  <div className="flex items-center gap-3">
+                    <Users className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Expérience requise</p>
+                      <p className="font-medium">{selectedOffre.experience_requise}</p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedOffre.horaires && (
+                  <div className="flex items-center gap-3">
+                    <Calendar className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Horaires</p>
+                      <p className="font-medium">{selectedOffre.horaires}</p>
+                    </div>
+                  </div>
+                )}
+
+                {(selectedOffre.date_debut || selectedOffre.date_fin) && (
+                  <div className="flex items-center gap-3">
+                    <Calendar className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Période</p>
+                      <p className="font-medium">
+                        {selectedOffre.date_debut && format(new Date(selectedOffre.date_debut), "dd MMM yyyy", { locale: fr })}
+                        {selectedOffre.date_debut && selectedOffre.date_fin && " - "}
+                        {selectedOffre.date_fin && format(new Date(selectedOffre.date_fin), "dd MMM yyyy", { locale: fr })}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {selectedOffre.description && (
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-muted-foreground mb-2">Description</p>
+                  <p className="text-sm">{selectedOffre.description}</p>
+                </div>
+              )}
+
+              {selectedOffre.avantages && (
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-muted-foreground mb-2">Avantages</p>
+                  <p className="text-sm">{selectedOffre.avantages}</p>
+                </div>
+              )}
+
+              <div className="flex justify-end pt-4">
+                <Button variant="outline" onClick={() => setIsOffreDialogOpen(false)}>
+                  Fermer
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
