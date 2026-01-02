@@ -165,6 +165,69 @@ export type Database = {
           },
         ]
       }
+      offre_candidatures: {
+        Row: {
+          admin_rejection_reason: string | null
+          admin_status: string
+          admin_validated_at: string | null
+          admin_validated_by: string | null
+          candidat_id: string
+          created_at: string
+          entreprise_rejection_reason: string | null
+          entreprise_response_at: string | null
+          entreprise_status: string
+          id: string
+          offre_id: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          admin_rejection_reason?: string | null
+          admin_status?: string
+          admin_validated_at?: string | null
+          admin_validated_by?: string | null
+          candidat_id: string
+          created_at?: string
+          entreprise_rejection_reason?: string | null
+          entreprise_response_at?: string | null
+          entreprise_status?: string
+          id?: string
+          offre_id: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_rejection_reason?: string | null
+          admin_status?: string
+          admin_validated_at?: string | null
+          admin_validated_by?: string | null
+          candidat_id?: string
+          created_at?: string
+          entreprise_rejection_reason?: string | null
+          entreprise_response_at?: string | null
+          entreprise_status?: string
+          id?: string
+          offre_id?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offre_candidatures_candidat_id_fkey"
+            columns: ["candidat_id"]
+            isOneToOne: false
+            referencedRelation: "candidatures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offre_candidatures_offre_id_fkey"
+            columns: ["offre_id"]
+            isOneToOne: false
+            referencedRelation: "offres"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offres: {
         Row: {
           avantages: string | null

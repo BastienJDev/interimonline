@@ -19,6 +19,9 @@ import {
   FileText,
   X,
   Filter,
+  History,
+  Building2,
+  Calendar,
 } from "lucide-react";
 import {
   Dialog,
@@ -42,6 +45,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -67,6 +71,17 @@ interface Candidat {
   mission_status: string | null;
 }
 
+interface MissionHistory {
+  id: string;
+  titre: string;
+  entreprise_name: string;
+  lieu: string | null;
+  date_debut: string | null;
+  date_fin: string | null;
+  status: string;
+  note: string | null;
+}
+
 const AdminCandidatsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterMetier, setFilterMetier] = useState<string>("");
@@ -89,6 +104,23 @@ const AdminCandidatsPage = () => {
       if (error) throw error;
       return data as Candidat[];
     },
+  });
+
+  // Fetch mission history for selected candidat
+  const { data: missionHistory, isLoading: isLoadingHistory } = useQuery({
+    queryKey: ['mission-history', selectedCandidat?.id],
+    queryFn: async () => {
+      if (!selectedCandidat) return [];
+      const { data, error } = await supabase
+        .from('mission_history')
+        .select('*')
+        .eq('candidat_id', selectedCandidat.id)
+        .order('date_debut', { ascending: false });
+      
+      if (error) throw error;
+      return data as MissionHistory[];
+    },
+    enabled: !!selectedCandidat,
   });
 
   // Get unique cities from candidats for filter suggestions
@@ -314,7 +346,7 @@ const AdminCandidatsPage = () => {
 
       {/* Candidate detail dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Profil du candidat</DialogTitle>
             <DialogDescription>
@@ -322,131 +354,220 @@ const AdminCandidatsPage = () => {
             </DialogDescription>
           </DialogHeader>
           {selectedCandidat && (
-            <div className="space-y-6">
-              {/* Header with avatar */}
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                  <User className="w-8 h-8 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold">
-                    {selectedCandidat.first_name} {selectedCandidat.last_name}
-                  </h3>
-                  <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
-                    <CheckCircle className="w-3 h-3 mr-1" />
-                    Validé
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Contact info */}
-              <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                <h4 className="font-medium text-foreground">Contact</h4>
-                <div className="grid gap-2">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Mail className="w-4 h-4" />
-                    <span>{selectedCandidat.email}</span>
+            <Tabs defaultValue="profil" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="profil">
+                  <User className="w-4 h-4 mr-2" />
+                  Profil
+                </TabsTrigger>
+                <TabsTrigger value="historique">
+                  <History className="w-4 h-4 mr-2" />
+                  Historique des missions
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="profil" className="space-y-6 mt-4">
+                {/* Header with avatar */}
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                    <User className="w-8 h-8 text-primary" />
                   </div>
-                  {selectedCandidat.phone && (
+                  <div>
+                    <h3 className="text-lg font-semibold">
+                      {selectedCandidat.first_name} {selectedCandidat.last_name}
+                    </h3>
+                    <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      Validé
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Contact info */}
+                <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                  <h4 className="font-medium text-foreground">Contact</h4>
+                  <div className="grid gap-2">
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <Phone className="w-4 h-4" />
-                      <span>{selectedCandidat.phone}</span>
+                      <Mail className="w-4 h-4" />
+                      <span>{selectedCandidat.email}</span>
                     </div>
-                  )}
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Clock className="w-4 h-4" />
-                    <span>
-                      Validé le{' '}
-                      {selectedCandidat.approval_date 
-                        ? format(new Date(selectedCandidat.approval_date), 'dd MMMM yyyy', { locale: fr })
-                        : '-'
-                      }
-                    </span>
+                    {selectedCandidat.phone && (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Phone className="w-4 h-4" />
+                        <span>{selectedCandidat.phone}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Clock className="w-4 h-4" />
+                      <span>
+                        Validé le{' '}
+                        {selectedCandidat.approval_date 
+                          ? format(new Date(selectedCandidat.approval_date), 'dd MMMM yyyy', { locale: fr })
+                          : '-'
+                        }
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Professional info */}
-              <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                <h4 className="font-medium text-foreground">Expérience professionnelle</h4>
-                <div className="grid gap-3">
-                  {selectedCandidat.metier && (
-                    <div className="flex items-start gap-2">
-                      <Briefcase className="w-4 h-4 mt-0.5 text-primary" />
-                      <div>
-                        <p className="text-sm font-medium">Métier principal</p>
-                        <p className="text-muted-foreground">{selectedCandidat.metier}</p>
+                {/* Professional info */}
+                <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                  <h4 className="font-medium text-foreground">Expérience professionnelle</h4>
+                  <div className="grid gap-3">
+                    {selectedCandidat.metier && (
+                      <div className="flex items-start gap-2">
+                        <Briefcase className="w-4 h-4 mt-0.5 text-primary" />
+                        <div>
+                          <p className="text-sm font-medium">Métier principal</p>
+                          <p className="text-muted-foreground">{selectedCandidat.metier}</p>
+                        </div>
                       </div>
+                    )}
+                    {selectedCandidat.experience && (
+                      <div className="flex items-start gap-2">
+                        <Clock className="w-4 h-4 mt-0.5 text-primary" />
+                        <div>
+                          <p className="text-sm font-medium">Années d'expérience</p>
+                          <p className="text-muted-foreground">{selectedCandidat.experience}</p>
+                        </div>
+                      </div>
+                    )}
+                    {selectedCandidat.competences && (
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="w-4 h-4 mt-0.5 text-primary" />
+                        <div>
+                          <p className="text-sm font-medium">Compétences</p>
+                          <p className="text-muted-foreground whitespace-pre-wrap">{selectedCandidat.competences}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Mobility info */}
+                <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                  <h4 className="font-medium text-foreground">Mobilité</h4>
+                  <div className="grid gap-3">
+                    {selectedCandidat.permis && (
+                      <div className="flex items-start gap-2">
+                        <Car className="w-4 h-4 mt-0.5 text-primary" />
+                        <div>
+                          <p className="text-sm font-medium">Permis</p>
+                          <p className="text-muted-foreground">{selectedCandidat.permis}</p>
+                        </div>
+                      </div>
+                    )}
+                    {selectedCandidat.deplacement && (
+                      <div className="flex items-start gap-2">
+                        <MapPin className="w-4 h-4 mt-0.5 text-primary" />
+                        <div>
+                          <p className="text-sm font-medium">Moyen de déplacement</p>
+                          <p className="text-muted-foreground">{selectedCandidat.deplacement}</p>
+                        </div>
+                      </div>
+                    )}
+                    {selectedCandidat.mobilite && (
+                      <div className="flex items-start gap-2">
+                        <MapPin className="w-4 h-4 mt-0.5 text-primary" />
+                        <div>
+                          <p className="text-sm font-medium">Zone de mobilité</p>
+                          <p className="text-muted-foreground">{selectedCandidat.mobilite}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* CV */}
+                {selectedCandidat.cv_url && (
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <h4 className="font-medium text-foreground mb-3">Documents</h4>
+                    <Button variant="outline" size="sm" asChild>
+                      <a href={selectedCandidat.cv_url} target="_blank" rel="noopener noreferrer">
+                        <FileText className="w-4 h-4 mr-2" />
+                        Voir le CV
+                      </a>
+                    </Button>
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="historique" className="mt-4">
+                <div className="space-y-4">
+                  <h4 className="font-medium text-foreground flex items-center gap-2">
+                    <History className="w-4 h-4" />
+                    Missions effectuées
+                  </h4>
+                  
+                  {isLoadingHistory ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
                     </div>
-                  )}
-                  {selectedCandidat.experience && (
-                    <div className="flex items-start gap-2">
-                      <Clock className="w-4 h-4 mt-0.5 text-primary" />
-                      <div>
-                        <p className="text-sm font-medium">Années d'expérience</p>
-                        <p className="text-muted-foreground">{selectedCandidat.experience}</p>
-                      </div>
+                  ) : missionHistory && missionHistory.length > 0 ? (
+                    <div className="space-y-3">
+                      {missionHistory.map((mission) => (
+                        <div 
+                          key={mission.id} 
+                          className="p-4 bg-muted/50 rounded-lg border border-border/50"
+                        >
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <h5 className="font-medium text-foreground">{mission.titre}</h5>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                                <Building2 className="w-4 h-4" />
+                                <span>{mission.entreprise_name}</span>
+                              </div>
+                            </div>
+                            <Badge 
+                              className={
+                                mission.status === 'terminee' 
+                                  ? 'bg-green-500/10 text-green-600 border-green-500/20'
+                                  : mission.status === 'en_cours'
+                                  ? 'bg-blue-500/10 text-blue-600 border-blue-500/20'
+                                  : 'bg-gray-500/10 text-gray-600 border-gray-500/20'
+                              }
+                            >
+                              {mission.status === 'terminee' ? 'Terminée' : 
+                               mission.status === 'en_cours' ? 'En cours' : mission.status}
+                            </Badge>
+                          </div>
+                          
+                          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mt-3">
+                            {mission.lieu && (
+                              <div className="flex items-center gap-1">
+                                <MapPin className="w-3 h-3" />
+                                <span>{mission.lieu}</span>
+                              </div>
+                            )}
+                            {(mission.date_debut || mission.date_fin) && (
+                              <div className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                <span>
+                                  {mission.date_debut ? format(new Date(mission.date_debut), 'dd/MM/yyyy', { locale: fr }) : '?'}
+                                  {' → '}
+                                  {mission.date_fin ? format(new Date(mission.date_fin), 'dd/MM/yyyy', { locale: fr }) : 'En cours'}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {mission.note && (
+                            <p className="text-sm text-muted-foreground mt-2 italic">
+                              {mission.note}
+                            </p>
+                          )}
+                        </div>
+                      ))}
                     </div>
-                  )}
-                  {selectedCandidat.competences && (
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 mt-0.5 text-primary" />
-                      <div>
-                        <p className="text-sm font-medium">Compétences</p>
-                        <p className="text-muted-foreground whitespace-pre-wrap">{selectedCandidat.competences}</p>
-                      </div>
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <History className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>Aucune mission enregistrée pour ce candidat</p>
                     </div>
                   )}
                 </div>
-              </div>
-
-              {/* Mobility info */}
-              <div className="p-4 bg-muted/50 rounded-lg space-y-3">
-                <h4 className="font-medium text-foreground">Mobilité</h4>
-                <div className="grid gap-3">
-                  {selectedCandidat.permis && (
-                    <div className="flex items-start gap-2">
-                      <Car className="w-4 h-4 mt-0.5 text-primary" />
-                      <div>
-                        <p className="text-sm font-medium">Permis</p>
-                        <p className="text-muted-foreground">{selectedCandidat.permis}</p>
-                      </div>
-                    </div>
-                  )}
-                  {selectedCandidat.deplacement && (
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-4 h-4 mt-0.5 text-primary" />
-                      <div>
-                        <p className="text-sm font-medium">Moyen de déplacement</p>
-                        <p className="text-muted-foreground">{selectedCandidat.deplacement}</p>
-                      </div>
-                    </div>
-                  )}
-                  {selectedCandidat.mobilite && (
-                    <div className="flex items-start gap-2">
-                      <MapPin className="w-4 h-4 mt-0.5 text-primary" />
-                      <div>
-                        <p className="text-sm font-medium">Zone de mobilité</p>
-                        <p className="text-muted-foreground">{selectedCandidat.mobilite}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* CV */}
-              {selectedCandidat.cv_url && (
-                <div className="p-4 bg-muted/50 rounded-lg">
-                  <h4 className="font-medium text-foreground mb-3">Documents</h4>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href={selectedCandidat.cv_url} target="_blank" rel="noopener noreferrer">
-                      <FileText className="w-4 h-4 mr-2" />
-                      Voir le CV
-                    </a>
-                  </Button>
-                </div>
-              )}
-            </div>
+              </TabsContent>
+            </Tabs>
           )}
         </DialogContent>
       </Dialog>
