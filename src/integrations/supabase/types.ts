@@ -14,6 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
+      candidature_documents: {
+        Row: {
+          candidature_id: string
+          created_at: string
+          document_type: string | null
+          file_url: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          candidature_id: string
+          created_at?: string
+          document_type?: string | null
+          file_url?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          candidature_id?: string
+          created_at?: string
+          document_type?: string | null
+          file_url?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "candidature_documents_candidature_id_fkey"
+            columns: ["candidature_id"]
+            isOneToOne: false
+            referencedRelation: "candidatures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidatures: {
+        Row: {
+          adresse: string | null
+          created_at: string
+          cv_url: string | null
+          disponibilite: string | null
+          email: string
+          experience: string | null
+          id: string
+          nom: string
+          poste: string
+          prenom: string
+          rejection_reason: string | null
+          status: string
+          telephone: string | null
+          updated_at: string
+          user_id: string | null
+          validated_at: string | null
+          validated_by: string | null
+          ville: string | null
+        }
+        Insert: {
+          adresse?: string | null
+          created_at?: string
+          cv_url?: string | null
+          disponibilite?: string | null
+          email: string
+          experience?: string | null
+          id?: string
+          nom: string
+          poste: string
+          prenom: string
+          rejection_reason?: string | null
+          status?: string
+          telephone?: string | null
+          updated_at?: string
+          user_id?: string | null
+          validated_at?: string | null
+          validated_by?: string | null
+          ville?: string | null
+        }
+        Update: {
+          adresse?: string | null
+          created_at?: string
+          cv_url?: string | null
+          disponibilite?: string | null
+          email?: string
+          experience?: string | null
+          id?: string
+          nom?: string
+          poste?: string
+          prenom?: string
+          rejection_reason?: string | null
+          status?: string
+          telephone?: string | null
+          updated_at?: string
+          user_id?: string | null
+          validated_at?: string | null
+          validated_by?: string | null
+          ville?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
