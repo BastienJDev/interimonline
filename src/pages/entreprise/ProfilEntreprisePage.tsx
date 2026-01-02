@@ -22,6 +22,24 @@ import {
   Briefcase
 } from "lucide-react";
 
+interface Profile {
+  id: string;
+  user_id: string;
+  email: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+  company_name: string | null;
+  siret: string | null;
+  address: string | null;
+  city: string | null;
+  postal_code: string | null;
+  website: string | null;
+  description: string | null;
+  sector: string | null;
+  employees_count: string | null;
+}
+
 const ProfilEntreprisePage = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -53,7 +71,7 @@ const ProfilEntreprisePage = () => {
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) throw error;
-      return data;
+      return data as Profile | null;
     },
     enabled: !!user?.id,
   });
@@ -65,15 +83,15 @@ const ProfilEntreprisePage = () => {
         first_name: profile.first_name || "",
         last_name: profile.last_name || "",
         phone: profile.phone || "",
-        company_name: "",
-        siret: "",
-        address: "",
-        city: "",
-        postal_code: "",
-        website: "",
-        description: "",
-        sector: "",
-        employees_count: "",
+        company_name: profile.company_name || "",
+        siret: profile.siret || "",
+        address: profile.address || "",
+        city: profile.city || "",
+        postal_code: profile.postal_code || "",
+        website: profile.website || "",
+        description: profile.description || "",
+        sector: profile.sector || "",
+        employees_count: profile.employees_count || "",
       });
     }
   }, [profile]);
@@ -85,9 +103,18 @@ const ProfilEntreprisePage = () => {
       const { error } = await supabase
         .from("profiles")
         .update({
-          first_name: data.first_name,
-          last_name: data.last_name,
-          phone: data.phone,
+          first_name: data.first_name || null,
+          last_name: data.last_name || null,
+          phone: data.phone || null,
+          company_name: data.company_name || null,
+          siret: data.siret || null,
+          address: data.address || null,
+          city: data.city || null,
+          postal_code: data.postal_code || null,
+          website: data.website || null,
+          description: data.description || null,
+          sector: data.sector || null,
+          employees_count: data.employees_count || null,
         })
         .eq("user_id", user.id);
       if (error) throw error;
