@@ -15,7 +15,7 @@ const navItems = [
   { label: "Tableau de bord", href: "/admin", icon: <BarChart3 className="w-5 h-5" /> },
   { label: "Candidats", href: "/admin/candidats", icon: <Users className="w-5 h-5" /> },
   { label: "Offres", href: "/admin/offres", icon: <Briefcase className="w-5 h-5" /> },
-  { label: "Utilisateurs", href: "/admin/utilisateurs", icon: <Shield className="w-5 h-5" /> },
+  { label: "Entreprises", href: "/admin/entreprises", icon: <Shield className="w-5 h-5" /> },
 ];
 
 const AdminLayout = () => {
