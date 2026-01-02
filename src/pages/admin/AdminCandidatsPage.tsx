@@ -17,6 +17,8 @@ import {
   Car,
   MapPin,
   FileText,
+  X,
+  Filter,
 } from "lucide-react";
 import {
   Dialog,
@@ -33,9 +35,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { metiers } from "@/components/MetierCombobox";
 
 interface Candidat {
   id: string;
@@ -44,6 +54,7 @@ interface Candidat {
   last_name: string | null;
   email: string | null;
   phone: string | null;
+  city: string | null;
   metier: string | null;
   experience: string | null;
   competences: string | null;
@@ -58,6 +69,9 @@ interface Candidat {
 
 const AdminCandidatsPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterMetier, setFilterMetier] = useState<string>("");
+  const [filterVille, setFilterVille] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string>("");
   const [selectedCandidat, setSelectedCandidat] = useState<Candidat | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -77,11 +91,42 @@ const AdminCandidatsPage = () => {
     },
   });
 
-  const filteredCandidats = candidats?.filter(c => 
-    `${c.first_name} ${c.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.metier?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  // Get unique cities from candidats for filter suggestions
+  const uniqueCities = [...new Set(candidats?.map(c => c.city || c.mobilite).filter(Boolean) || [])];
+
+  const filteredCandidats = candidats?.filter(c => {
+    // Text search
+    const matchesSearch = !searchTerm || 
+      `${c.first_name} ${c.last_name}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Métier filter
+    const matchesMetier = !filterMetier || c.metier === filterMetier;
+    
+    // Ville/Region filter
+    const matchesVille = !filterVille || 
+      c.city?.toLowerCase().includes(filterVille.toLowerCase()) ||
+      c.mobilite?.toLowerCase().includes(filterVille.toLowerCase());
+    
+    // Status filter
+    const matchesStatus = !filterStatus || c.mission_status === filterStatus;
+    
+    return matchesSearch && matchesMetier && matchesVille && matchesStatus;
+  }) || [];
+
+  const hasActiveFilters = filterMetier || filterVille || filterStatus;
+
+  const clearFilters = () => {
+    setFilterMetier("");
+    setFilterVille("");
+    setFilterStatus("");
+  };
+
+  const getMetierLabel = (value: string | null) => {
+    if (!value) return '-';
+    const metier = metiers.find(m => m.value === value);
+    return metier ? metier.label : value;
+  };
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '-';
@@ -112,18 +157,81 @@ const AdminCandidatsPage = () => {
         )}
       </div>
 
-      {/* Search */}
+      {/* Search and Filters */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="pt-6 space-y-4">
+          {/* Search bar */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Rechercher par nom, email ou métier..."
+              placeholder="Rechercher par nom ou email..."
               className="pl-10"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          
+          {/* Filters row */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            {/* Métier filter */}
+            <Select value={filterMetier} onValueChange={setFilterMetier}>
+              <SelectTrigger>
+                <div className="flex items-center gap-2">
+                  <Briefcase className="w-4 h-4 text-muted-foreground" />
+                  <SelectValue placeholder="Tous les métiers" />
+                </div>
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px]">
+                <SelectItem value="">Tous les métiers</SelectItem>
+                {metiers.map((metier) => (
+                  <SelectItem key={metier.value} value={metier.value}>
+                    {metier.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Ville/Region filter */}
+            <div className="relative">
+              <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+              <Input
+                placeholder="Ville ou région..."
+                className="pl-10"
+                value={filterVille}
+                onChange={(e) => setFilterVille(e.target.value)}
+              />
+            </div>
+
+            {/* Status filter */}
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger>
+                <div className="flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-muted-foreground" />
+                  <SelectValue placeholder="Tous les statuts" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Tous les statuts</SelectItem>
+                <SelectItem value="disponible">Disponible</SelectItem>
+                <SelectItem value="en_mission">En mission</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Clear filters button */}
+            {hasActiveFilters && (
+              <Button variant="outline" onClick={clearFilters} className="gap-2">
+                <X className="w-4 h-4" />
+                Effacer les filtres
+              </Button>
+            )}
+          </div>
+
+          {/* Results count */}
+          {(searchTerm || hasActiveFilters) && (
+            <p className="text-sm text-muted-foreground">
+              {filteredCandidats.length} résultat{filteredCandidats.length > 1 ? 's' : ''} trouvé{filteredCandidats.length > 1 ? 's' : ''}
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -167,7 +275,7 @@ const AdminCandidatsPage = () => {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>{candidat.metier || '-'}</TableCell>
+                    <TableCell>{getMetierLabel(candidat.metier)}</TableCell>
                     <TableCell>{candidat.phone || '-'}</TableCell>
                     <TableCell>
                       {candidat.mission_status === 'en_mission' ? (
