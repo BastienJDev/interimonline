@@ -20,7 +20,9 @@ import {
   Calendar,
   Euro,
   Building2,
-  User
+  User,
+  Download,
+  UserCheck
 } from "lucide-react";
 import {
   Dialog,
@@ -88,6 +90,7 @@ const AdminCandidatsPage = () => {
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [candidatToReject, setCandidatToReject] = useState<Candidature | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -237,6 +240,60 @@ const AdminCandidatsPage = () => {
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('fr-FR');
+  };
+
+  const handleExportPDF = async (exportType: 'full' | 'anonymous') => {
+    if (!selectedCandidat) return;
+    
+    setIsExporting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-candidat-pdf', {
+        body: {
+          candidat: selectedCandidat,
+          missions: candidatMissions,
+          exportType
+        }
+      });
+
+      if (error) throw error;
+
+      // Import html2pdf dynamically
+      const html2pdf = (await import('html2pdf.js')).default;
+      
+      // Create a temporary container
+      const container = document.createElement('div');
+      container.innerHTML = data.html;
+      document.body.appendChild(container);
+
+      // Generate PDF
+      await html2pdf()
+        .set({
+          margin: 0,
+          filename: data.filename,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        })
+        .from(container)
+        .save();
+
+      // Clean up
+      document.body.removeChild(container);
+
+      toast({
+        title: "Export réussi",
+        description: `Le PDF a été téléchargé`,
+      });
+    } catch (error) {
+      console.error('Export error:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de générer le PDF",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   if (isLoading) {
@@ -571,7 +628,37 @@ const AdminCandidatsPage = () => {
                 )}
               </div>
 
-              {/* Actions */}
+              {/* Export buttons */}
+              <div className="flex gap-3 pt-4 border-t border-border">
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => handleExportPDF('full')}
+                  disabled={isExporting}
+                >
+                  {isExporting ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <Download className="w-4 h-4 mr-2" />
+                  )}
+                  Export complet (interne)
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => handleExportPDF('anonymous')}
+                  disabled={isExporting}
+                >
+                  {isExporting ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <UserCheck className="w-4 h-4 mr-2" />
+                  )}
+                  Export client (anonyme)
+                </Button>
+              </div>
+
+              {/* Validation actions */}
               {selectedCandidat.status === "en_attente" && (
                 <div className="flex gap-3 pt-4 border-t border-border">
                   <Button 
