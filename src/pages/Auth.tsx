@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Eye, EyeOff, Mail, Lock, User, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, CheckCircle, Loader2 } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { z } from 'zod';
 
@@ -36,6 +36,7 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [confirmationPending, setConfirmationPending] = useState(false);
 
   const { signIn, signUp, user, isAdmin, loading, rolesLoading } = useAuth();
   const navigate = useNavigate();
@@ -168,10 +169,7 @@ const Auth = () => {
             });
           }
         } else {
-          toast({
-            title: 'Inscription réussie',
-            description: 'Votre compte a été créé avec succès',
-          });
+          setConfirmationPending(true);
         }
       }
     } catch (error) {
@@ -278,6 +276,66 @@ const Auth = () => {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Email confirmation pending
+  if (confirmationPending) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-card rounded-2xl shadow-card p-8">
+            {/* Logo */}
+            <div className="flex justify-center mb-8">
+              <img src={logo} alt="Logo" className="h-16" />
+            </div>
+
+            <div className="text-center space-y-4">
+              <div className="p-6 bg-primary/10 rounded-lg">
+                <div className="relative mx-auto w-16 h-16 mb-4">
+                  <Mail className="w-16 h-16 text-primary" />
+                  <div className="absolute -top-1 -right-1 bg-primary rounded-full p-1">
+                    <CheckCircle className="w-5 h-5 text-primary-foreground" />
+                  </div>
+                </div>
+                <h2 className="text-xl font-bold text-foreground mb-2">Vérifiez votre email</h2>
+                <p className="text-muted-foreground text-sm">
+                  Un email de confirmation a été envoyé à
+                </p>
+                <p className="font-medium text-foreground mt-1">{email}</p>
+              </div>
+
+              <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm py-4">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>En attente de confirmation...</span>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-xs text-muted-foreground">
+                  Cliquez sur le lien dans l'email pour activer votre compte. 
+                  Vérifiez également votre dossier spam.
+                </p>
+                
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => {
+                    setConfirmationPending(false);
+                    setMode('login');
+                    setEmail('');
+                    setPassword('');
+                    setFirstName('');
+                    setLastName('');
+                  }}
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Retour à la connexion
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
