@@ -35,6 +35,7 @@ import PolitiqueCookies from "./pages/PolitiqueCookies";
 import MentionsLegales from "./pages/MentionsLegales";
 import CGU from "./pages/CGU";
 import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite";
+import Contact from "./pages/Contact";
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/mentions-legales" element={<MentionsLegales />} />
             <Route path="/cgu" element={<CGU />} />
             <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="/dashboard-entreprise" element={<DashboardEntreprise />} />
             <Route path="/dashboard-entreprise/offres" element={<OffresPage />} />
             <Route path="/dashboard-entreprise/offres/:id" element={<OffreDetailPage />} />
