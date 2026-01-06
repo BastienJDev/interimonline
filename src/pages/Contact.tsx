@@ -260,7 +260,7 @@ const Contact = () => {
                         <div>
                           <h3 className="font-semibold text-foreground mb-1">Horaires</h3>
                           <p className="text-muted-foreground">
-                            Lundi - Vendredi : 8h00 - 18h00<br />
+                            Lundi - Vendredi : 8h-12h / 14h-18h<br />
                             Samedi - Dimanche : Fermé
                           </p>
                         </div>
