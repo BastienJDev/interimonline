@@ -36,6 +36,7 @@ import MentionsLegales from "./pages/MentionsLegales";
 import CGU from "./pages/CGU";
 import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite";
 import Contact from "./pages/Contact";
+import VerifyEmail from "./pages/VerifyEmail";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/pending-approval" element={<PendingApproval />} />
             <Route path="/nos-interimaires" element={<NosInterimaires />} />
             <Route path="/nos-clients" element={<NosClients />} />
