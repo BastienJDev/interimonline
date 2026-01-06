@@ -1,4 +1,4 @@
-import { Phone, Mail, MapPin, Linkedin, Facebook, Twitter } from "lucide-react";
+import { Phone, Mail, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
@@ -13,6 +13,7 @@ const Footer = () => {
       { label: "Nous rejoindre", href: "/nous-rejoindre" },
       { label: "Espace Intérimaire", href: "/dashboard-interimaire" },
       { label: "Espace Recruteur", href: "/dashboard-entreprise" },
+      { label: "Contact", href: "/contact" },
     ],
     legal: [
       { label: "Mentions légales", href: "/mentions-legales" },
@@ -91,17 +92,6 @@ const Footer = () => {
                   {link.label}
                 </Link>
               ))}
-            </div>
-            <div className="flex items-center gap-4">
-              <a href="#" className="text-secondary-foreground/60 hover:text-primary transition-colors">
-                <Linkedin className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-secondary-foreground/60 hover:text-primary transition-colors">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-secondary-foreground/60 hover:text-primary transition-colors">
-                <Twitter className="w-5 h-5" />
-              </a>
             </div>
           </div>
         </div>
