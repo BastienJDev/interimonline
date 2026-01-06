@@ -329,7 +329,7 @@ const NousRejoindre = () => {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
-        <main className="flex-1 flex items-center justify-center py-16 px-4">
+        <main className="flex-1 flex items-center justify-center pt-32 pb-16 px-4">
           <Card className="max-w-md w-full shadow-xl">
             <CardContent className="pt-8 pb-8">
               <div className="text-center space-y-4">
@@ -382,7 +382,7 @@ const NousRejoindre = () => {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
-        <main className="flex-1 flex items-center justify-center py-16 px-4">
+        <main className="flex-1 flex items-center justify-center pt-32 pb-16 px-4">
           <div className="max-w-4xl w-full">
             <div className="text-center mb-12">
               <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
@@ -473,7 +473,7 @@ const NousRejoindre = () => {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
-        <main className="flex-1 flex items-center justify-center py-16 px-4">
+        <main className="flex-1 flex items-center justify-center pt-32 pb-16 px-4">
           <div className="max-w-2xl w-full">
             <Card className="shadow-xl">
               <CardHeader>
@@ -765,7 +765,7 @@ const NousRejoindre = () => {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Header />
-        <main className="flex-1 flex items-center justify-center py-16 px-4">
+        <main className="flex-1 flex items-center justify-center pt-32 pb-16 px-4">
           <div className="max-w-2xl w-full">
             <Card className="shadow-xl">
               <CardHeader>
