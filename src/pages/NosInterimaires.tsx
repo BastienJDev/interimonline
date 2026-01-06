@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import logo from "@/assets/logo.png";
 
 const interimaires = [
   {
@@ -134,8 +135,8 @@ const NosInterimaires = () => {
               <Card key={interimaire.id} className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
-                      {interimaire.nom.split(' ').map(n => n[0]).join('')}
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center overflow-hidden">
+                      <img src={logo} alt="Interim Online" className="w-10 h-10 object-contain" />
                     </div>
                     <Badge variant={interimaire.disponible ? "default" : "secondary"}>
                       {interimaire.disponible ? "Disponible" : "En mission"}
