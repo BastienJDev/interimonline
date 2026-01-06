@@ -222,8 +222,8 @@ const Contact = () => {
                         </div>
                         <div>
                           <h3 className="font-semibold text-foreground mb-1">Email</h3>
-                          <a href="mailto:recrutement@interim-online.fr" className="text-muted-foreground hover:text-primary transition-colors">
-                            recrutement@interim-online.fr
+                          <a href="mailto:contact@interim-online.fr" className="text-muted-foreground hover:text-primary transition-colors">
+                            contact@interim-online.fr
                           </a>
                         </div>
                       </div>
@@ -234,8 +234,8 @@ const Contact = () => {
                         </div>
                         <div>
                           <h3 className="font-semibold text-foreground mb-1">Téléphone</h3>
-                          <a href="tel:+33123456789" className="text-muted-foreground hover:text-primary transition-colors">
-                            01 23 45 67 89
+                          <a href="tel:+33140341045" className="text-muted-foreground hover:text-primary transition-colors">
+                            01 40 34 10 45
                           </a>
                         </div>
                       </div>
@@ -247,8 +247,8 @@ const Contact = () => {
                         <div>
                           <h3 className="font-semibold text-foreground mb-1">Adresse</h3>
                           <p className="text-muted-foreground">
-                            123 Rue du BTP<br />
-                            75001 Paris, France
+                            82 rue Dunkerque<br />
+                            75009 Paris
                           </p>
                         </div>
                       </div>
@@ -277,7 +277,7 @@ const Contact = () => {
                         Notre équipe réactive vous proposera des candidats qualifiés dans les plus brefs délais.
                       </p>
                       <Button variant="outline" asChild>
-                        <a href="tel:+33123456789">
+                        <a href="tel:+33140341045">
                           <Phone className="w-4 h-4 mr-2" />
                           Appeler maintenant
                         </a>
