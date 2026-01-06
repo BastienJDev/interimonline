@@ -147,7 +147,7 @@ const CGU = () => {
                 Pour toute question concernant les présentes CGU :
               </p>
               <ul className="list-none mt-2 space-y-1">
-                <li>Email : contact@interim-online-protech.fr</li>
+                <li>Email : contact@interim-online.fr</li>
                 <li>Téléphone : 01 40 34 10 45</li>
               </ul>
             </section>
