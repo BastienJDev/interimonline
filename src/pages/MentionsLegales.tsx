@@ -20,7 +20,7 @@ const MentionsLegales = () => {
               <ul className="list-none mt-4 space-y-2">
                 <li><strong>Raison sociale :</strong> Interim Online Pro-Tech</li>
                 <li><strong>Forme juridique :</strong> SAS</li>
-                <li><strong>Capital social :</strong> [À compléter] €</li>
+                <li><strong>Capital social :</strong> 80 000 €</li>
                 <li><strong>Siège social :</strong> [Adresse à compléter]</li>
                 <li><strong>SIRET :</strong> [À compléter]</li>
                 <li><strong>RCS :</strong> [À compléter]</li>
