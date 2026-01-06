@@ -105,7 +105,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (email: string, password: string, firstName?: string, lastName?: string) => {
     const redirectUrl = `${window.location.origin}/`;
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -116,6 +116,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         },
       },
     });
+
+    // If signup successful, send custom verification email and notify admin
+    if (!error && data.user) {
+      // Send verification email via custom SMTP
+      try {
+        await supabase.functions.invoke('send-verification-email', {
+          body: {
+            userId: data.user.id,
+            email,
+            firstName,
+          },
+        });
+      } catch (e) {
+        console.error('Error sending verification email:', e);
+      }
+
+      // Notify admin of new registration
+      try {
+        await supabase.functions.invoke('notify-registration', {
+          body: {
+            userType: 'interimaire', // Default, will be updated when profile is completed
+            email,
+            firstName,
+            lastName,
+          },
+        });
+      } catch (e) {
+        console.error('Error sending registration notification:', e);
+      }
+    }
+
     return { error };
   };
 
