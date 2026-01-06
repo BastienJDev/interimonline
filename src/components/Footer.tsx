@@ -15,9 +15,10 @@ const Footer = () => {
       { label: "Espace Recruteur", href: "/dashboard-entreprise" },
     ],
     legal: [
-      { label: "Mentions légales", href: "#" },
-      { label: "Politique de confidentialité", href: "#" },
-      { label: "CGU", href: "#" },
+      { label: "Mentions légales", href: "/mentions-legales" },
+      { label: "Politique de confidentialité", href: "/politique-confidentialite" },
+      { label: "CGU", href: "/cgu" },
+      { label: "Cookies", href: "/politique-cookies" },
     ],
   };
 
@@ -84,11 +85,11 @@ const Footer = () => {
             <p className="text-secondary-foreground/60 text-sm">
               © {currentYear} Interim online Pro-Tech 82. Tous droits réservés.
             </p>
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center gap-4 md:gap-6">
               {footerLinks.legal.map((link) => (
-                <a key={link.label} href={link.href} className="text-secondary-foreground/60 text-sm hover:text-primary transition-colors">
+                <Link key={link.label} to={link.href} className="text-secondary-foreground/60 text-sm hover:text-primary transition-colors">
                   {link.label}
-                </a>
+                </Link>
               ))}
             </div>
             <div className="flex items-center gap-4">

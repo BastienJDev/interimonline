@@ -31,6 +31,10 @@ import AdminOffresPage from "./pages/admin/AdminOffresPage";
 import AdminEntreprisesPage from "./pages/admin/AdminEntreprisesPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminCandidaturesSpontaneesPage from "./pages/admin/AdminCandidaturesSpontaneesPage";
+import PolitiqueCookies from "./pages/PolitiqueCookies";
+import MentionsLegales from "./pages/MentionsLegales";
+import CGU from "./pages/CGU";
+import PolitiqueConfidentialite from "./pages/PolitiqueConfidentialite";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +54,10 @@ const App = () => (
             <Route path="/nos-clients" element={<NosClients />} />
             <Route path="/nos-services" element={<NosServices />} />
             <Route path="/nous-rejoindre" element={<NousRejoindre />} />
+            <Route path="/politique-cookies" element={<PolitiqueCookies />} />
+            <Route path="/mentions-legales" element={<MentionsLegales />} />
+            <Route path="/cgu" element={<CGU />} />
+            <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
             <Route path="/dashboard-entreprise" element={<DashboardEntreprise />} />
             <Route path="/dashboard-entreprise/offres" element={<OffresPage />} />
             <Route path="/dashboard-entreprise/offres/:id" element={<OffreDetailPage />} />
