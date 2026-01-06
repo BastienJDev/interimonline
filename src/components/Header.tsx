@@ -119,12 +119,12 @@ const Header = () => {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <a
-              href="/#contact"
+            <Link
+              to="/contact"
               className="text-sm font-medium transition-colors hover:text-primary text-foreground"
             >
               Contact
-            </a>
+            </Link>
           </nav>
 
             {/* CTA Buttons */}
@@ -218,13 +218,13 @@ const Header = () => {
                 ))}
               </div>
 
-              <a
-                href="/#contact"
+              <Link
+                to="/contact"
                 className="text-foreground font-medium py-2 hover:text-primary transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Contact
-              </a>
+              </Link>
 
               {/* Section authentification mobile */}
               <div className="border-t border-border pt-4 flex flex-col gap-2">
