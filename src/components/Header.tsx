@@ -1,18 +1,24 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Phone, ChevronDown } from "lucide-react";
+import { Menu, X, Phone, ChevronDown, LogOut } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import logo from "@/assets/logo.png";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [userType, setUserType] = useState<string | null>(null);
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,6 +27,42 @@ const Header = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Fetch user profile to determine user type
+  useEffect(() => {
+    const fetchUserType = async () => {
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("user_type")
+          .eq("user_id", user.id)
+          .single();
+        if (data) {
+          setUserType(data.user_type);
+        }
+      } else {
+        setUserType(null);
+      }
+    };
+    fetchUserType();
+  }, [user]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate("/");
+  };
+
+  const handleEspaceClick = () => {
+    if (!user) {
+      navigate("/auth");
+    }
+  };
+
+  const getDashboardLink = () => {
+    if (userType === "interimaire") return "/dashboard-interimaire";
+    if (userType === "recruteur") return "/dashboard-entreprise";
+    return "/auth";
+  };
 
   const mainLinks = [
     { label: "Accueil", href: "/", isRoute: true },
@@ -85,41 +127,53 @@ const Header = () => {
             </a>
           </nav>
 
-          {/* CTA Buttons */}
-          <div className="hidden lg:flex items-center gap-4">
-            <a href="tel:+33140341045" className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <Phone className="w-4 h-4" />
-              01 40 34 10 45
-            </a>
-            {/* Lien Nous rejoindre */}
-            <Link to="/nous-rejoindre">
-              <Button variant="outline" size="sm">
-                Nous rejoindre
-              </Button>
-            </Link>
-
-            {/* Dropdown Mon Espace */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="cta" size="sm" className="flex items-center gap-1">
-                  Mon Espace
-                  <ChevronDown className="w-3 h-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-card">
-                <DropdownMenuItem asChild>
-                  <Link to="/dashboard-interimaire" className="w-full cursor-pointer">
-                    Espace Intérimaire
+            {/* CTA Buttons */}
+            <div className="hidden lg:flex items-center gap-4">
+              <a href="tel:+33140341045" className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <Phone className="w-4 h-4" />
+                01 40 34 10 45
+              </a>
+              
+              {!user ? (
+                <>
+                  {/* Non connecté - Afficher Nous rejoindre et Connexion */}
+                  <Link to="/nous-rejoindre">
+                    <Button variant="outline" size="sm">
+                      Nous rejoindre
+                    </Button>
                   </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to="/dashboard-entreprise" className="w-full cursor-pointer">
-                    Espace Recruteur
+                  <Link to="/auth">
+                    <Button variant="cta" size="sm">
+                      Connexion
+                    </Button>
                   </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+                </>
+              ) : (
+                <>
+                  {/* Connecté - Afficher Mon Espace avec dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="cta" size="sm" className="flex items-center gap-1">
+                        Mon Espace
+                        <ChevronDown className="w-3 h-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="bg-card">
+                      <DropdownMenuItem asChild>
+                        <Link to={getDashboardLink()} className="w-full cursor-pointer">
+                          Tableau de bord
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Déconnexion
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              )}
+            </div>
 
           {/* Mobile Menu Button */}
           <button
@@ -172,32 +226,46 @@ const Header = () => {
                 Contact
               </a>
 
-              {/* Nous rejoindre en mobile */}
-              <Link
-                to="/nous-rejoindre"
-                className="text-foreground font-medium py-2 hover:text-primary transition-colors border-t border-border pt-4"
-                onClick={() => setIsMobileMenuOpen(false)}
-              >
-                Nous rejoindre
-              </Link>
-
-              {/* Section Mon Espace en mobile */}
-              <div className="border-t border-border pt-2">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider">Mon Espace</span>
-                <Link
-                  to="/dashboard-interimaire"
-                  className="text-foreground font-medium py-2 hover:text-primary transition-colors block pl-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Espace Intérimaire
-                </Link>
-                <Link
-                  to="/dashboard-entreprise"
-                  className="text-foreground font-medium py-2 hover:text-primary transition-colors block pl-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Espace Recruteur
-                </Link>
+              {/* Section authentification mobile */}
+              <div className="border-t border-border pt-4 flex flex-col gap-2">
+                {!user ? (
+                  <>
+                    <Link
+                      to="/nous-rejoindre"
+                      className="text-foreground font-medium py-2 hover:text-primary transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Nous rejoindre
+                    </Link>
+                    <Link
+                      to="/auth"
+                      className="text-foreground font-medium py-2 hover:text-primary transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Connexion
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      to={getDashboardLink()}
+                      className="text-foreground font-medium py-2 hover:text-primary transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      Mon Espace
+                    </Link>
+                    <button
+                      onClick={() => {
+                        handleSignOut();
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className="text-destructive font-medium py-2 hover:text-destructive/80 transition-colors text-left flex items-center gap-2"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Déconnexion
+                    </button>
+                  </>
+                )}
               </div>
             </nav>
           </div>
