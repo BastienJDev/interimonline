@@ -43,8 +43,8 @@ const MentionsLegales = () => {
                 Le site est hébergé par :
               </p>
               <ul className="list-none mt-4 space-y-2">
-                <li><strong>Société :</strong> Lovable / Supabase</li>
-                <li><strong>Adresse :</strong> San Francisco, CA, USA</li>
+                <li><strong>Société :</strong> Hostinger</li>
+                <li><strong>Adresse :</strong> 61 Lordou Vironos Street, 6023 Larnaca, Chypre</li>
               </ul>
             </section>
 
