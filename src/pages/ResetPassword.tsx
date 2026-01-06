@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Eye, EyeOff, Lock } from 'lucide-react';
+import { Eye, EyeOff, Lock, Loader2, CheckCircle, XCircle } from 'lucide-react';
 import logo from '@/assets/logo.png';
 import { z } from 'zod';
 
@@ -18,34 +18,35 @@ const resetSchema = z.object({
 });
 
 const ResetPassword = () => {
+  const [searchParams] = useSearchParams();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(true);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [tokenError, setTokenError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [isValidSession, setIsValidSession] = useState(false);
 
   const navigate = useNavigate();
   const { toast } = useToast();
+  const token = searchParams.get('token');
 
   useEffect(() => {
-    // Check if user has a valid recovery session
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setIsValidSession(true);
-      } else {
-        toast({
-          title: 'Lien invalide',
-          description: 'Ce lien de réinitialisation est invalide ou a expiré.',
-          variant: 'destructive',
-        });
-        navigate('/auth');
-      }
-    };
-
-    checkSession();
-  }, [navigate, toast]);
+    // If no token in URL, check for Supabase session (legacy flow)
+    if (!token) {
+      const checkSession = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setTokenError('Lien invalide ou expiré');
+        }
+        setIsVerifying(false);
+      };
+      checkSession();
+    } else {
+      setIsVerifying(false);
+    }
+  }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,20 +67,46 @@ const ResetPassword = () => {
         return;
       }
 
-      const { error } = await supabase.auth.updateUser({ password });
+      if (token) {
+        // New custom flow with token
+        const { data, error } = await supabase.functions.invoke('verify-reset-token', {
+          body: { token, newPassword: password },
+        });
 
-      if (error) {
-        toast({
-          title: 'Erreur',
-          description: error.message,
-          variant: 'destructive',
-        });
+        if (error || data?.error) {
+          const errorMessage = data?.error || error?.message || 'Erreur lors de la réinitialisation';
+          toast({
+            title: 'Erreur',
+            description: errorMessage,
+            variant: 'destructive',
+          });
+          if (errorMessage.includes('expiré') || errorMessage.includes('invalide')) {
+            setTokenError(errorMessage);
+          }
+        } else {
+          setIsSuccess(true);
+          toast({
+            title: 'Mot de passe modifié',
+            description: 'Votre mot de passe a été réinitialisé avec succès.',
+          });
+        }
       } else {
-        toast({
-          title: 'Mot de passe modifié',
-          description: 'Votre mot de passe a été réinitialisé avec succès.',
-        });
-        navigate('/auth');
+        // Legacy Supabase flow
+        const { error } = await supabase.auth.updateUser({ password });
+
+        if (error) {
+          toast({
+            title: 'Erreur',
+            description: error.message,
+            variant: 'destructive',
+          });
+        } else {
+          setIsSuccess(true);
+          toast({
+            title: 'Mot de passe modifié',
+            description: 'Votre mot de passe a été réinitialisé avec succès.',
+          });
+        }
       }
     } catch (error) {
       console.error('Reset password error:', error);
@@ -93,11 +120,62 @@ const ResetPassword = () => {
     }
   };
 
-  if (!isValidSession) {
+  if (isVerifying) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
         <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
           <p className="text-muted-foreground">Vérification en cours...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (tokenError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-card rounded-2xl shadow-card p-8">
+            <div className="flex justify-center mb-8">
+              <img src={logo} alt="Logo" className="h-16" />
+            </div>
+            <div className="text-center space-y-4">
+              <div className="p-6 bg-destructive/10 rounded-lg">
+                <XCircle className="w-16 h-16 text-destructive mx-auto mb-4" />
+                <h2 className="text-xl font-bold text-foreground mb-2">Lien invalide</h2>
+                <p className="text-muted-foreground text-sm">{tokenError}</p>
+              </div>
+              <Button onClick={() => navigate('/auth')} className="w-full">
+                Retour à la connexion
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isSuccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="bg-card rounded-2xl shadow-card p-8">
+            <div className="flex justify-center mb-8">
+              <img src={logo} alt="Logo" className="h-16" />
+            </div>
+            <div className="text-center space-y-4">
+              <div className="p-6 bg-primary/10 rounded-lg">
+                <CheckCircle className="w-16 h-16 text-primary mx-auto mb-4" />
+                <h2 className="text-xl font-bold text-foreground mb-2">Mot de passe modifié !</h2>
+                <p className="text-muted-foreground text-sm">
+                  Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.
+                </p>
+              </div>
+              <Button onClick={() => navigate('/auth')} className="w-full">
+                Se connecter
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -107,12 +185,10 @@ const ResetPassword = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="bg-card rounded-2xl shadow-card p-8">
-          {/* Logo */}
           <div className="flex justify-center mb-8">
             <img src={logo} alt="Logo" className="h-16" />
           </div>
 
-          {/* Title */}
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-foreground mb-2">
               Nouveau mot de passe
@@ -122,7 +198,6 @@ const ResetPassword = () => {
             </p>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="password">Nouveau mot de passe</Label>
@@ -168,7 +243,14 @@ const ResetPassword = () => {
             </div>
 
             <Button type="submit" variant="cta" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Chargement...' : 'Réinitialiser le mot de passe'}
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Chargement...
+                </>
+              ) : (
+                'Réinitialiser le mot de passe'
+              )}
             </Button>
           </form>
         </div>
