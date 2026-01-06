@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 type UserType = "interimaire" | "recruteur" | null;
 
 const NousRejoindre = () => {
+  const [searchParams] = useSearchParams();
   const [userType, setUserType] = useState<UserType>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,6 +26,14 @@ const NousRejoindre = () => {
   
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Read type from URL query params on mount
+  useEffect(() => {
+    const typeParam = searchParams.get('type');
+    if (typeParam === 'interimaire' || typeParam === 'recruteur') {
+      setUserType(typeParam);
+    }
+  }, [searchParams]);
 
   // Interimaire form state
   const [interimaireForm, setInterimaireForm] = useState({

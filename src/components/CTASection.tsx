@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const CTASection = () => {
   return (
@@ -24,12 +25,16 @@ const CTASection = () => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button variant="cta" size="xl">
-              Créer mon compte entreprise
-              <ArrowRight className="w-5 h-5" />
+            <Button variant="cta" size="xl" asChild>
+              <Link to="/nous-rejoindre?type=recruteur">
+                Créer mon compte entreprise
+                <ArrowRight className="w-5 h-5" />
+              </Link>
             </Button>
-            <Button variant="outline" size="xl">
-              Je suis candidat
+            <Button variant="outline" size="xl" asChild>
+              <Link to="/nous-rejoindre?type=interimaire">
+                Je suis candidat
+              </Link>
             </Button>
           </div>
         </div>
