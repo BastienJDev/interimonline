@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-
+import logo from "@/assets/logo.png";
 const clients = [
   {
     id: 1,
@@ -126,8 +126,8 @@ const NosClients = () => {
               <Card key={client.id} className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-xl">
-                      {client.logo}
+                    <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center overflow-hidden">
+                      <img src={logo} alt="Interim Online" className="w-10 h-10 object-contain" />
                     </div>
                     <Badge variant="secondary" className="text-xs">
                       <Star className="w-3 h-3 mr-1 fill-yellow-400 text-yellow-400" />
